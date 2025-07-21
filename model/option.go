@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"gorm.io/gorm/clause"
 )
 
 type Option struct {
@@ -160,15 +162,17 @@ func SyncOptions(frequency int) {
 func UpdateOption(key string, value string) error {
 	// Save to database first
 	option := Option{
-		Key: key,
+		Key:   key,
+		Value: value,
 	}
-	// https://gorm.io/docs/update.html#Save-All-Fields
-	DB.FirstOrCreate(&option, Option{Key: key})
-	option.Value = value
-	// Save is a combination function.
-	// If save value does not contain primary key, it will execute Create,
-	// otherwise it will execute Update (with all fields).
-	DB.Save(&option)
+	// Use Assign to update the record with the new value, or create it if it doesn't exist.
+	// This is an atomic "upsert" operation.
+	if err := DB.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "key"}},
+		DoUpdates: clause.AssignmentColumns([]string{"value"}),
+	}).Create(&option).Error; err != nil {
+		return err
+	}
 	// Update OptionMap
 	return updateOptionMap(key, value)
 }

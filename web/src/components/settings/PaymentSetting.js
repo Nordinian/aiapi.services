@@ -17,6 +17,8 @@ const PaymentSetting = () => {
     TopupGroupRatio: '',
     CustomCallbackAddress: '',
     PayMethods: '',
+    StripeSecretKey: '',
+    StripeWebhookSecret: '',
   });
 
   let [loading, setLoading] = useState(false);

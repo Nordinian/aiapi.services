@@ -1,6 +1,6 @@
 package setting
 
-var ServerAddress = "http://localhost:3000"
+var ServerAddress = "https://localhost:3000"
 var WorkerUrl = ""
 var WorkerValidKey = ""
 var WorkerAllowHttpImageRequestEnabled = false

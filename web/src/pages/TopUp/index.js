@@ -188,43 +188,63 @@ const TopUp = () => {
     setConfirmLoading(true);
     setOpen(false);
     try {
-      const res = await API.post('/api/user/pay', {
+      let endpoint = '/api/user/pay'; // Default to e-pay
+      if (payWay === 'stripe') {
+        endpoint = '/api/stripe/pay';
+      }
+
+      const res = await API.post(endpoint, {
         amount: parseInt(topUpCount),
         top_up_code: topUpCode,
         payment_method: payWay,
       });
-      if (res !== undefined) {
+
+      if (res) {
         const { message, data } = res.data;
         if (message === 'success') {
-          let params = data;
-          let url = res.data.url;
-          let form = document.createElement('form');
-          form.action = url;
-          form.method = 'POST';
-          let isSafari =
-            navigator.userAgent.indexOf('Safari') > -1 &&
-            navigator.userAgent.indexOf('Chrome') < 1;
-          if (!isSafari) {
-            form.target = '_blank';
+          if (payWay === 'stripe') {
+            // Stripe payment flow
+            if (data.url) {
+              window.location.href = data.url;
+            } else {
+              showError(t('无法获取Stripe支付链接'));
+            }
+          } else {
+            // E-pay (or other form-based) payment flow
+            let params = data.params;
+            let url = data.url;
+            if (!url || !params) {
+              showError(t('支付网关返回数据格式不正确'));
+              return;
+            }
+            let form = document.createElement('form');
+            form.action = url;
+            form.method = 'POST';
+            let isSafari =
+              navigator.userAgent.indexOf('Safari') > -1 &&
+              navigator.userAgent.indexOf('Chrome') < 1;
+            if (!isSafari) {
+              form.target = '_blank';
+            }
+            for (let key in params) {
+              let input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = key;
+              input.value = params[key];
+              form.appendChild(input);
+            }
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
           }
-          for (let key in params) {
-            let input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = params[key];
-            form.appendChild(input);
-          }
-          document.body.appendChild(form);
-          form.submit();
-          document.body.removeChild(form);
         } else {
           showError(data);
         }
       } else {
-        showError(res);
+        showError(t('支付网关未返回有效响应'));
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
       showError(t('支付请求失败'));
     } finally {
       setConfirmLoading(false);

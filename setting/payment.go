@@ -9,6 +9,11 @@ var EpayKey = ""
 var Price = 7.3
 var MinTopUp = 1
 
+// Stripe 相关配置
+var StripePriceID = ""
+var StripeSecretKey = ""
+var StripeWebhookSecret = ""
+
 var PayMethods = []map[string]string{
 	{
 		"name":  "支付宝",
@@ -19,6 +24,11 @@ var PayMethods = []map[string]string{
 		"name":  "微信",
 		"color": "rgba(var(--semi-green-5), 1)",
 		"type":  "wxpay",
+	},
+	{
+		"name":  "Stripe",
+		"color": "rgba(var(--semi-violet-5), 1)",
+		"type":  "stripe",
 	},
 }
 

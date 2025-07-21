@@ -1,7 +1,5 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig, transformWithEsbuild } from 'vite';
-import pkg from '@douyinfe/vite-plugin-semi';
-const { vitePluginSemi } = pkg;
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -21,10 +19,7 @@ export default defineConfig({
         });
       },
     },
-    react(),
-    vitePluginSemi({
-      cssLayer: true
-    })
+    react()
   ],
   optimizeDeps: {
     force: true,

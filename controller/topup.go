@@ -103,6 +103,12 @@ func RequestEpay(c *gin.Context) {
 		return
 	}
 
+	// 如果是 Stripe 支付，重定向到 Stripe 处理器
+	if req.PaymentMethod == "stripe" {
+		RequestStripe(c)
+		return
+	}
+
 	callBackAddress := service.GetCallbackAddress()
 	returnUrl, _ := url.Parse(setting.ServerAddress + "/console/log")
 	notifyUrl, _ := url.Parse(callBackAddress + "/api/user/epay/notify")
