@@ -1,3 +1,147 @@
+============= Banner 背景模糊球 ==================== */
+.blur-ball {
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.blur-ball-indigo {
+  background: #6366f1;
+  /* indigo-500 */
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0.5;
+}
+
+.blur-ball-teal {
+  background: #14b8a6;
+  /* teal-400 */
+  top: 200px;
+  left: 30%;
+  opacity: 0.4;
+}
+
+/* 浅色主题下让模糊球更柔和 */
+html:not(.dark) .blur-ball-indigo {
+  opacity: 0.25;
+}
+
+html:not(.dark) .blur-ball-teal {
+  opacity: 0.2;
+}
+=======
+/* ==================== Banner 背景模糊球 ==================== */
+.blur-ball {
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.blur-ball-indigo {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  /* indigo-500 to purple-500 */
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0.6;
+  animation: float 6s ease-in-out infinite;
+}
+
+.blur-ball-teal {
+  background: linear-gradient(135deg, #14b8a6, #06b6d4);
+  /* teal-400 to cyan-500 */
+  top: 200px;
+  left: 30%;
+  opacity: 0.5;
+  animation: float 8s ease-in-out infinite reverse;
+}
+
+/* 浅色主题下让模糊球更柔和 */
+html:not(.dark) .blur-ball-indigo {
+  opacity: 0.3;
+}
+
+html:not(.dark) .blur-ball-teal {
+  opacity: 0.25;
+}
+
+/* 浮动动画 */
+@keyframes float {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0px);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-20px);
+  }
+}
+
+/* ==================== 领先AI平台特效 ==================== */
+/* 增强的闪光文字效果 */
+.shine-text {
+  background: linear-gradient(90deg, 
+    currentColor 0%, 
+    currentColor 30%, 
+    rgba(255, 255, 255, 0.95) 50%, 
+    currentColor 70%, 
+    currentColor 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: sweep-shine 3s linear infinite;
+  position: relative;
+}
+
+.dark .shine-text {
+  background: linear-gradient(90deg, 
+    currentColor 0%, 
+    currentColor 30%, 
+    #fbbf24 50%, 
+    currentColor 70%, 
+    currentColor 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* AI科技感渐变背景 */
+.ai-gradient-bg {
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.1) 0%, 
+    rgba(139, 92, 246, 0.1) 25%, 
+    rgba(20, 184, 166, 0.1) 50%, 
+    rgba(6, 182, 212, 0.1) 75%, 
+    rgba(99, 102, 241, 0.1) 100%);
+  background-size: 400% 400%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 增强的扫光动画 */
+@keyframes sweep-shine {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 /* ==================== Tailwind CSS 配置 ==================== */
 @layer tailwind-base, semi, tailwind-components, tailwind-utils;
 
@@ -31,7 +175,9 @@ body.sidebar-collapsed {
 /* 移除了在移动端强制设为 0 的限制，改由 React 控制是否渲染侧边栏以实现显示/隐藏 */
 
 body {
-  font-family: Lato, 'Helvetica Neue', Arial, Helvetica, 'Microsoft YaHei', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue',
+    Helvetica, Arial, sans-serif;
   color: var(--semi-color-text-0);
   background-color: var(--semi-color-bg-0);
 }

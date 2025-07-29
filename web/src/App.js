@@ -29,7 +29,7 @@ import SetupCheck from './components/layout/SetupCheck.js';
 
 const Home = lazy(() => import('./pages/Home'));
 const Detail = lazy(() => import('./pages/Detail'));
-const About = lazy(() => import('./pages/About'));
+const TokenQuery = lazy(() => import('./pages/TokenQuery'));
 
 function App() {
   const location = useLocation();
@@ -262,10 +262,10 @@ function App() {
           }
         />
         <Route
-          path='/about'
+          path='/token-query'
           element={
             <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <About />
+              <TokenQuery />
             </Suspense>
           }
         />

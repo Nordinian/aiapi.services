@@ -1226,10 +1226,10 @@ const Detail = (props) => {
                         <div className="text-lg font-semibold">
                           <Skeleton
                             loading={loading}
-                            active
+                            active={true}
                             placeholder={
                               <Skeleton.Paragraph
-                                active
+                                active={true}
                                 rows={1}
                                 style={{ width: '65px', height: '24px', marginTop: '4px' }}
                               />

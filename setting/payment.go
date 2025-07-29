@@ -10,10 +10,7 @@ var Price = 7.3
 var MinTopUp = 1
 var USDExchangeRate = 7.3
 
-// Stripe 相关配置
-var StripePriceID = ""
-var StripeSecretKey = ""
-var StripeWebhookSecret = ""
+// Stripe 相关配置 (已迁移到 payment_stripe.go)
 
 var PayMethods = []map[string]string{
 	{

@@ -105,7 +105,7 @@ func RequestEpay(c *gin.Context) {
 
 	// 如果是 Stripe 支付，重定向到 Stripe 处理器
 	if req.PaymentMethod == "stripe" {
-		RequestStripe(c)
+		RequestStripePay(c)
 		return
 	}
 

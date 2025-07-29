@@ -1,0 +1,223 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 766B 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/alpine:latest
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/golang:alpine
+#3 ...
+
+#4 [auth] library/golang:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#5 [auth] oven/bun:pull token for registry-1.docker.io
+#5 DONE 0.0s
+
+#6 [internal] load metadata for docker.io/oven/bun:latest
+#6 DONE 3.0s
+
+#3 [internal] load metadata for docker.io/library/golang:alpine
+#3 DONE 3.0s
+
+#7 [internal] load .dockerignore
+#7 transferring context: 178B done
+#7 DONE 0.0s
+
+#8 [stage-2 1/4] FROM docker.io/library/alpine:latest
+#8 DONE 0.0s
+
+#9 [builder 1/8] FROM docker.io/oven/bun:latest@sha256:31f25ad4c661322a3dc9d9d98fbf34989502b1ea588a2ca629da98c8e5a2d116
+#9 DONE 0.0s
+
+#10 [builder2 1/7] FROM docker.io/library/golang:alpine@sha256:daae04ebad0c21149979cd8e9db38f565ecefd8547cf4a591240dc1972cf1399
+#10 DONE 0.0s
+
+#11 [internal] load build context
+#11 transferring context: 28.05kB 0.0s done
+#11 DONE 0.1s
+
+#12 [builder 2/8] WORKDIR /build
+#12 CACHED
+
+#13 [builder 3/8] COPY web/package.json .
+#13 CACHED
+
+#14 [builder 4/8] COPY web/bun.lock .
+#14 CACHED
+
+#15 [builder 5/8] RUN bun install
+#15 CACHED
+
+#16 [builder 6/8] COPY ./web .
+#16 CACHED
+
+#17 [builder 7/8] COPY ./VERSION .
+#17 CACHED
+
+#18 [builder2 3/7] ADD go.mod go.sum ./
+#18 CACHED
+
+#19 [builder2 4/7] RUN go mod download
+#19 CACHED
+
+#20 [builder2 2/7] WORKDIR /build
+#20 CACHED
+
+#21 [builder2 5/7] COPY . .
+#21 CACHED
+
+#22 [builder 8/8] RUN DISABLE_ESLINT_PLUGIN='true' VITE_REACT_APP_VERSION=$(cat VERSION) bun run build
+#22 1.093 $ vite build
+#22 1.935 vite v5.4.11 building for production...
+#22 2.089 transforming...
+#22 38.13 node_modules/lottie-web/build/player/lottie.js (17010:32): Use of eval in "node_modules/lottie-web/build/player/lottie.js" is strongly discouraged as it poses security risks and may cause issues with minification.
+#22 69.73 ✓ 17771 modules transformed.
+#22 82.71 rendering chunks...
+#22 87.69 computing gzip size...
+#22 87.79 dist/index.html                                           1.41 kB │ gzip:   0.69 kB
+#22 87.79 dist/assets/KaTeX_Size3-Regular-CTq5MqoE.woff             4.42 kB
+#22 87.79 dist/assets/KaTeX_Size4-Regular-Dl5lxZxV.woff2            4.93 kB
+#22 87.79 dist/assets/KaTeX_Size2-Regular-Dy4dx90m.woff2            5.21 kB
+#22 87.79 dist/assets/KaTeX_Size1-Regular-mCD8mA8B.woff2            5.47 kB
+#22 87.79 dist/assets/KaTeX_Size4-Regular-BF-4gkZK.woff             5.98 kB
+#22 87.79 dist/assets/KaTeX_Size2-Regular-oD1tc_U0.woff             6.19 kB
+#22 87.79 dist/assets/KaTeX_Size1-Regular-C195tn64.woff             6.50 kB
+#22 87.79 dist/assets/KaTeX_Caligraphic-Regular-Di6jR-x-.woff2      6.91 kB
+#22 87.80 dist/assets/KaTeX_Caligraphic-Bold-Dq_IR9rO.woff2         6.91 kB
+#22 87.80 dist/assets/KaTeX_Size3-Regular-DgpXs0kz.ttf              7.59 kB
+#22 87.80 dist/assets/KaTeX_Caligraphic-Regular-CTRA-rTL.woff       7.66 kB
+#22 87.80 dist/assets/KaTeX_Caligraphic-Bold-BEiXGLvX.woff          7.72 kB
+#22 87.80 dist/assets/KaTeX_Script-Regular-D3wIWfF6.woff2           9.64 kB
+#22 87.80 dist/assets/KaTeX_SansSerif-Regular-DDBCnlJ7.woff2       10.34 kB
+#22 87.80 dist/assets/KaTeX_Size4-Regular-DWFBv043.ttf             10.36 kB
+#22 87.80 dist/assets/KaTeX_Script-Regular-D5yQViql.woff           10.59 kB
+#22 87.80 dist/assets/KaTeX_Fraktur-Regular-CTYiF6lA.woff2         11.32 kB
+#22 87.80 dist/assets/KaTeX_Fraktur-Bold-CL6g_b3V.woff2            11.35 kB
+#22 87.80 dist/assets/KaTeX_Size2-Regular-B7gKUWhC.ttf             11.51 kB
+#22 87.80 dist/assets/KaTeX_SansSerif-Italic-C3H0VqGB.woff2        12.03 kB
+#22 87.80 dist/assets/KaTeX_SansSerif-Bold-D1sUS0GD.woff2          12.22 kB
+#22 87.80 dist/assets/KaTeX_Size1-Regular-Dbsnue_I.ttf             12.23 kB
+#22 87.80 dist/assets/KaTeX_SansSerif-Regular-CS6fqUqJ.woff        12.32 kB
+#22 87.80 dist/assets/KaTeX_Caligraphic-Regular-wX97UBjC.ttf       12.34 kB
+#22 87.80 dist/assets/KaTeX_Caligraphic-Bold-ATXxdsX0.ttf          12.37 kB
+#22 87.80 dist/assets/KaTeX_Fraktur-Regular-Dxdc4cR9.woff          13.21 kB
+#22 87.80 dist/assets/KaTeX_Fraktur-Bold-BsDP51OF.woff             13.30 kB
+#22 87.80 dist/assets/KaTeX_Typewriter-Regular-CO6r4hn1.woff2      13.57 kB
+#22 87.80 dist/assets/KaTeX_SansSerif-Italic-DN2j7dab.woff         14.11 kB
+#22 87.80 dist/assets/KaTeX_SansSerif-Bold-DbIhKOiC.woff           14.41 kB
+#22 87.80 dist/assets/KaTeX_Typewriter-Regular-C0xS9mPB.woff       16.03 kB
+#22 87.80 dist/assets/KaTeX_Math-BoldItalic-CZnvNsCZ.woff2         16.40 kB
+#22 87.80 dist/assets/KaTeX_Math-Italic-t53AETM-.woff2             16.44 kB
+#22 87.80 dist/assets/KaTeX_Script-Regular-C5JkGWo-.ttf            16.65 kB
+#22 87.80 dist/assets/KaTeX_Main-BoldItalic-DxDJ3AOS.woff2         16.78 kB
+#22 87.80 dist/assets/KaTeX_Main-Italic-NWA7e6Wa.woff2             16.99 kB
+#22 87.80 dist/assets/KaTeX_Math-BoldItalic-iY-2wyZ7.woff          18.67 kB
+#22 87.80 dist/assets/KaTeX_Math-Italic-DA0__PXp.woff              18.75 kB
+#22 87.80 dist/assets/KaTeX_Main-BoldItalic-SpSLRI95.woff          19.41 kB
+#22 87.80 dist/assets/KaTeX_SansSerif-Regular-BNo7hRIc.ttf         19.44 kB
+#22 87.80 dist/assets/KaTeX_Fraktur-Regular-CB_wures.ttf           19.57 kB
+#22 87.80 dist/assets/KaTeX_Fraktur-Bold-BdnERNNW.ttf              19.58 kB
+#22 87.80 dist/assets/KaTeX_Main-Italic-BMLOBm91.woff              19.68 kB
+#22 87.80 dist/assets/KaTeX_SansSerif-Italic-YYjJ1zSn.ttf          22.36 kB
+#22 87.80 dist/assets/KaTeX_SansSerif-Bold-CFMepnvq.ttf            24.50 kB
+#22 87.80 dist/assets/KaTeX_Main-Bold-Cx986IdX.woff2               25.32 kB
+#22 87.80 dist/assets/KaTeX_Main-Regular-B22Nviop.woff2            26.27 kB
+#22 87.80 dist/assets/KaTeX_Typewriter-Regular-D3Ib7_Hf.ttf        27.56 kB
+#22 87.80 dist/assets/KaTeX_AMS-Regular-BQhdFMY1.woff2             28.08 kB
+#22 87.80 dist/assets/KaTeX_Main-Bold-Jm3AIy58.woff                29.91 kB
+#22 87.80 dist/assets/KaTeX_Main-Regular-Dr94JaBh.woff             30.77 kB
+#22 87.80 dist/assets/KaTeX_Math-BoldItalic-B3XSjfu4.ttf           31.20 kB
+#22 87.80 dist/assets/KaTeX_Math-Italic-flOr_0UB.ttf               31.31 kB
+#22 87.80 dist/assets/KaTeX_Main-BoldItalic-DzxPMmG6.ttf           32.97 kB
+#22 87.80 dist/assets/KaTeX_AMS-Regular-DMm9YOAa.woff              33.52 kB
+#22 87.80 dist/assets/KaTeX_Main-Italic-3WenGoN9.ttf               33.58 kB
+#22 87.80 dist/assets/KaTeX_Main-Bold-waoOVXN0.ttf                 51.34 kB
+#22 87.80 dist/assets/KaTeX_Main-Regular-ypZvNtVU.ttf              53.58 kB
+#22 87.80 dist/assets/KaTeX_AMS-Regular-DRggAlZN.ttf               63.63 kB
+#22 87.80 dist/assets/semi-ui-AhY5OLOV.css                        575.48 kB │ gzip:  64.93 kB
+#22 87.80 dist/assets/index-CBkSvOdv.css                          663.16 kB │ gzip:  84.96 kB
+#22 87.80 dist/assets/clone-DgBkW49F.js                             0.10 kB │ gzip:   0.11 kB
+#22 87.80 dist/assets/channel-DwUugDoj.js                           0.11 kB │ gzip:   0.12 kB
+#22 87.80 dist/assets/init-Gi6I4Gst.js                              0.15 kB │ gzip:   0.13 kB
+#22 87.80 dist/assets/chunk-XZIHB7SX-DrAWYksK.js                    0.19 kB │ gzip:   0.16 kB
+#22 87.80 dist/assets/chunk-4BMEZGHF-Dk87N5pL.js                    0.29 kB │ gzip:   0.20 kB
+#22 87.80 dist/assets/index-WFj7yXbQ.js                             0.42 kB │ gzip:   0.34 kB
+#22 87.80 dist/assets/classDiagram-GIVACNV2-DqQA9YL3.js             0.48 kB │ gzip:   0.32 kB
+#22 87.80 dist/assets/classDiagram-v2-COTLJTTW-DqQA9YL3.js          0.48 kB │ gzip:   0.32 kB
+#22 87.80 dist/assets/stateDiagram-v2-YXO3MK2T-sBbDqF4Z.js          0.48 kB │ gzip:   0.32 kB
+#22 87.80 dist/assets/chunk-RZ5BOZE2-CpbIawfT.js                    0.70 kB │ gzip:   0.47 kB
+#22 87.80 dist/assets/infoDiagram-PH2N3AL5-zN19-Sna.js              0.81 kB │ gzip:   0.51 kB
+#22 87.80 dist/assets/ordinal-Cboi1Yqb.js                           1.19 kB │ gzip:   0.57 kB
+#22 87.80 dist/assets/chunk-D6G4REZN-DHgF_U2J.js                    1.41 kB │ gzip:   0.62 kB
+#22 87.80 dist/assets/_basePickBy-DbuXo9Rp.js                       2.58 kB │ gzip:   1.28 kB
+#22 87.80 dist/assets/arc-HBUWYEQI.js                               3.43 kB │ gzip:   1.48 kB
+#22 87.80 dist/assets/diagram-VNBRO52H-DSyCpAVp.js                  3.86 kB │ gzip:   1.73 kB
+#22 87.80 dist/assets/pieDiagram-IB7DONF6-7h9WrU9i.js               5.10 kB │ gzip:   2.28 kB
+#22 87.80 dist/assets/graph-VdxPUT2G.js                             5.91 kB │ gzip:   1.87 kB
+#22 87.80 dist/assets/diagram-SSKATNLV-BXnXnWQR.js                  6.17 kB │ gzip:   2.60 kB
+#22 87.80 dist/assets/linear-Bc2983rJ.js                           10.17 kB │ gzip:   4.25 kB
+#22 87.80 dist/assets/stateDiagram-DGXRK772-B0mpmQzz.js            10.77 kB │ gzip:   3.80 kB
+#22 87.80 dist/assets/dagre-OKDRZEBW-DTaGboqp.js                   11.39 kB │ gzip:   4.26 kB
+#22 87.80 dist/assets/_baseUniq--c5x560_.js                        11.90 kB │ gzip:   4.65 kB
+#22 87.80 dist/assets/kanban-definition-NDS4AKOZ-BawM2eHc.js       20.66 kB │ gzip:   7.27 kB
+#22 87.80 dist/assets/sankeyDiagram-QLVOVGJD-BQRfJpRd.js           22.80 kB │ gzip:   8.35 kB
+#22 87.80 dist/assets/journeyDiagram-U35MCT3I-Cdn-3CkC.js          22.82 kB │ gzip:   8.07 kB
+#22 87.80 dist/assets/timeline-definition-BDJGKUSR-BrD8ehF6.js     23.76 kB │ gzip:   8.33 kB
+#22 87.80 dist/assets/gitGraphDiagram-7IBYFJ6S-DGcMXboO.js         24.78 kB │ gzip:   7.64 kB
+#22 87.80 dist/assets/erDiagram-Q7BY3M3F-ThgbatCD.js               25.42 kB │ gzip:   8.90 kB
+#22 87.80 dist/assets/layout-C2-HjuWH.js                           27.17 kB │ gzip:   9.67 kB
+#22 87.80 dist/assets/react-components-XvIrFW7f.js                 27.82 kB │ gzip:  10.83 kB
+#22 87.80 dist/assets/requirementDiagram-KVF5MWMF-6-Qxn6IK.js      30.34 kB │ gzip:   9.53 kB
+#22 87.80 dist/assets/quadrantDiagram-7GDLP6J5-DE0FZYQ4.js         34.40 kB │ gzip:  10.14 kB
+#22 87.80 dist/assets/chunk-AEK57VVT-CMEGutvD.js                   35.06 kB │ gzip:  11.28 kB
+#22 87.80 dist/assets/xychartDiagram-VJFVF3MP-D6UFyQST.js          38.84 kB │ gzip:  11.04 kB
+#22 87.80 dist/assets/chunk-A2AXSNBT-B_vZ5wHh.js                   45.12 kB │ gzip:  14.64 kB
+#22 87.80 dist/assets/index-Dzhto1Ic.js                            52.99 kB │ gzip:  15.40 kB
+#22 87.80 dist/assets/tools-BS9GMAEg.js                            59.46 kB │ gzip:  20.37 kB
+#22 87.80 dist/assets/i18n-CnTRIEVf.js                             59.79 kB │ gzip:  18.30 kB
+#22 87.80 dist/assets/flowDiagram-4HSFHLVR-CufXvyFI.js             60.95 kB │ gzip:  19.54 kB
+#22 87.80 dist/assets/ganttDiagram-APWFNJXF-FGXPFN2-.js            62.06 kB │ gzip:  21.11 kB
+#22 87.80 dist/assets/index-qIX4ieBD.js                            64.02 kB │ gzip:  12.96 kB
+#22 87.80 dist/assets/c4Diagram-VJAJSXHY-Ffl4Tq_M.js               70.26 kB │ gzip:  19.74 kB
+#22 87.80 dist/assets/blockDiagram-JOT3LUYC-CsXGu1PA.js            72.93 kB │ gzip:  20.77 kB
+#22 87.80 dist/assets/sequenceDiagram-X6HHIX6F-DpFKdtdT.js         88.68 kB │ gzip:  25.38 kB
+#22 87.80 dist/assets/mindmap-definition-ALO5MXBD-BkbU3NcJ.js     101.07 kB │ gzip:  28.59 kB
+#22 87.80 dist/assets/architectureDiagram-IEHRJDOE-CLe4tDoa.js    148.45 kB │ gzip:  42.03 kB
+#22 87.80 dist/assets/react-core-DtMAePju.js                      163.82 kB │ gzip:  53.49 kB
+#22 87.80 dist/assets/radar-MK3ICKWK-sRsza29D.js                  314.68 kB │ gzip:  78.92 kB
+#22 87.80 dist/assets/cytoscape.esm-BY7v1xhs.js                   438.68 kB │ gzip: 140.32 kB
+#22 87.80 dist/assets/semi-ui-Y3eUva7f.js                       1,648.28 kB │ gzip: 464.38 kB
+#22 87.80 dist/assets/visactor-C6yu58Ir.js                      1,902.66 kB │ gzip: 498.46 kB
+#22 87.80 dist/assets/index-CJ7kgbAR.js                         2,129.69 kB │ gzip: 572.59 kB
+#22 87.80 
+#22 87.80 (!) Some chunks are larger than 500 kB after minification. Consider:
+#22 87.80 - Using dynamic import() to code-split the application
+#22 87.80 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+#22 87.80 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+#22 87.81 ✓ built in 1m 26s
+#22 DONE 88.7s
+
+#23 [builder2 6/7] COPY --from=builder /build/dist ./web/dist
+#23 DONE 0.1s
+
+#24 [builder2 7/7] RUN go build -ldflags "-s -w -X 'one-api/common.Version=$(cat VERSION)'" -o one-api
+#24 DONE 43.7s
+
+#25 [stage-2 2/4] RUN apk upgrade --no-cache     && apk add --no-cache ca-certificates tzdata ffmpeg     && update-ca-certificates
+#25 CACHED
+
+#26 [stage-2 3/4] COPY --from=builder2 /build/one-api /
+#26 DONE 0.2s
+
+#27 [stage-2 4/4] WORKDIR /data
+#27 DONE 0.0s
+
+#28 exporting to image
+#28 exporting layers 0.1s done
+#28 writing image sha256:13ef3bd8396ebdfb5039e7738d6b5275d596c625054da8ab48f60a306d9eeee7
+#28 writing image sha256:13ef3bd8396ebdfb5039e7738d6b5275d596c625054da8ab48f60a306d9eeee7 done
+#28 naming to docker.io/library/aiapi.services:latest done
+#28 DONE 0.1s

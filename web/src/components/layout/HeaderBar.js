@@ -92,16 +92,12 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
   };
 
   useEffect(() => {
-    setUnreadCount(calculateUnreadCount());
+    const count = calculateUnreadCount();
+    setUnreadCount(prevCount => prevCount !== count ? count : prevCount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [announcements]);
 
   const mainNavLinks = [
-    {
-      text: t('首页'),
-      itemKey: 'home',
-      to: '/',
-    },
     {
       text: t('控制台'),
       itemKey: 'console',
@@ -123,9 +119,9 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
       ]
       : []),
     {
-      text: t('关于'),
-      itemKey: 'about',
-      to: '/about',
+      text: t('令牌查询'),
+      itemKey: 'token-query',
+      to: '/token-query',
     },
   ];
 
@@ -161,8 +157,13 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
       }
       const mergedKeys = Array.from(new Set([...readKeys, ...announcements.map(getAnnouncementKey)]));
       localStorage.setItem('notice_read_keys', JSON.stringify(mergedKeys));
+      // 使用 setTimeout 确保状态更新在下一个渲染周期
+      setTimeout(() => {
+        setUnreadCount(0);
+      }, 0);
+    } else {
+      setUnreadCount(0);
     }
-    setUnreadCount(0);
   };
 
   useEffect(() => {
@@ -213,9 +214,6 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
   };
 
   const handleNavLinkClick = (itemKey) => {
-    if (itemKey === 'home') {
-      // styleDispatch(styleActions.setSider(false)); // This line is removed
-    }
     setMobileMenuOpen(false);
   };
 
@@ -224,16 +222,16 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
       const skeletonLinkClasses = isMobileView
         ? 'flex items-center gap-1 p-3 w-full rounded-md'
         : 'flex items-center gap-1 p-2 rounded-md';
-      return Array(4)
+      return Array(3)
         .fill(null)
         .map((_, index) => (
           <div key={index} className={skeletonLinkClasses}>
             <Skeleton
               loading={true}
-              active
+              active={true}
               placeholder={
                 <Skeleton.Title
-                  active
+                  active={true}
                   style={{ width: isMobileView ? 100 : 60, height: 16 }}
                 />
               }
@@ -290,16 +288,16 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
         <div className="flex items-center p-1 rounded-full bg-semi-color-fill-0 dark:bg-semi-color-fill-1">
           <Skeleton
             loading={true}
-            active
-            placeholder={<Skeleton.Avatar active size="extra-small" className="shadow-sm" />}
+            active={true}
+            placeholder={<Skeleton.Avatar active={true} size="extra-small" className="shadow-sm" />}
           />
           <div className="ml-1.5 mr-1">
             <Skeleton
               loading={true}
-              active
+              active={true}
               placeholder={
                 <Skeleton.Title
-                  active
+                  active={true}
                   style={{ width: isMobile ? 15 : 50, height: 12 }}
                 />
               }
@@ -479,10 +477,10 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
             <Link to="/" onClick={() => handleNavLinkClick('home')} className="flex items-center gap-2 group ml-2">
               <Skeleton
                 loading={isLoading}
-                active
+                active={true}
                 placeholder={
                   <Skeleton.Image
-                    active
+                    active={true}
                     className="h-7 md:h-8 !rounded-full"
                     style={{ width: 32, height: 32 }}
                   />
@@ -494,10 +492,10 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
                 <div className="flex items-center gap-2">
                   <Skeleton
                     loading={isLoading}
-                    active
+                    active={true}
                     placeholder={
                       <Skeleton.Title
-                        active
+                        active={true}
                         style={{ width: 120, height: 24 }}
                       />
                     }
