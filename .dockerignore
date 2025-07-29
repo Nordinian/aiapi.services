@@ -5,12 +5,3 @@
 .gitignore
 Makefile
 docs
-web/node_modules
-web-feishu
-web/dist
-web/build
-logs
-data
-*.log
-.DS_Store
-**/.DS_Store

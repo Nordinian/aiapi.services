@@ -162,3 +162,8 @@ Re-optimizing dependencies because lockfile has changed
   ➜  Network: use --host to expose
 18:45:00 [vite] page reload web/dist/index.html
 18:45:00 [vite] page reload web/dist/index.html
+18:59:47 [vite] page reload index.html
+18:59:47 [vite] page reload web/index.html
+19:36:40 [vite] page reload web/index.html
+19:36:40 [vite] page reload web/dist/index.html
+19:36:40 [vite] page reload web/web/index.html

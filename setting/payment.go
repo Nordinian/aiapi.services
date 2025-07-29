@@ -10,8 +10,6 @@ var Price = 7.3
 var MinTopUp = 1
 var USDExchangeRate = 7.3
 
-// Stripe 相关配置 (已迁移到 payment_stripe.go)
-
 var PayMethods = []map[string]string{
 	{
 		"name":  "支付宝",
@@ -22,11 +20,6 @@ var PayMethods = []map[string]string{
 		"name":  "微信",
 		"color": "rgba(var(--semi-green-5), 1)",
 		"type":  "wxpay",
-	},
-	{
-		"name":  "Stripe",
-		"color": "rgba(var(--semi-violet-5), 1)",
-		"type":  "stripe",
 	},
 }
 

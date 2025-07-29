@@ -552,7 +552,7 @@
   "2025年5月10日后添加的渠道，不需要再在部署的时候移除模型名称中的\".\"": "2025年5月10日后添加的渠道，不需要再在部署的时候移除模型名称中的\".\"",
   "请输入 AZURE_OPENAI_ENDPOINT，例如：https://docs-test-001.openai.azure.com": "请输入 AZURE_OPENAI_ENDPOINT，例如：https://docs-test-001.openai.azure.com",
   "请输入默认 API 版本，例如：2025-04-01-preview": "请输入默认 API 版本，例如：2025-04-01-preview",
-  "如果你对接的是上游One API或者New API等转发项目，请使用OpenAI类型，不要使用此类型，除非你知道你在做什么。": "如果你对接的是上游API转发项目，请使用OpenAI类型，不要使用此类型，除非你知道你在做什么。",
+  "如果你对接的是上游One API或者New API等转发项目，请使用OpenAI类型，不要使用此类型，除非你知道你在做什么。": "如果你对接的是上游One API或者New API等转发项目，请使用OpenAI类型，不要使用此类型，除非你知道你在做什么。",
   "完整的 Base URL，支持变量{model}": "完整的 Base URL，支持变量{model}",
   "请输入完整的URL，例如：https://api.openai.com/v1/chat/completions": "请输入完整的URL，例如：https://api.openai.com/v1/chat/completions",
   "Dify渠道只适配chatflow和agent，并且agent不支持图片！": "Dify渠道只适配chatflow和agent，并且agent不支持图片！",
