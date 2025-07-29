@@ -1,0 +1,162 @@
+
+> aiapi-services-platform@1.0.0 dev
+> vite
+
+Forced re-optimization of dependencies
+
+  VITE v5.4.19  ready in 134 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://192.168.1.135:5173/
+  ➜  Network: http://192.168.64.1:5173/
+17:39:26 [vite] page reload index.html
+17:39:32 [vite] page reload index.html
+17:39:36 [vite] page reload index.html
+18:36:22 [vite] page reload index.html
+18:36:23 [vite] page reload src/App.js
+18:36:23 [vite] page reload src/components/auth/LoginForm.js
+18:36:23 [vite] page reload src/components/auth/OAuth2Callback.js
+18:36:23 [vite] page reload src/components/auth/PasswordResetConfirm.js
+18:36:23 [vite] page reload src/components/auth/PasswordResetForm.js
+18:36:23 [vite] page reload src/components/auth/RegisterForm.js
+18:36:23 [vite] page reload src/components/common/Loading.js
+18:36:23 [vite] page reload src/components/common/logo/GoogleIcon.js
+18:36:23 [vite] page reload src/components/common/logo/LinuxDoIcon.js
+18:36:23 [vite] page reload src/components/common/logo/OIDCIcon.js
+18:36:23 [vite] page reload src/components/common/logo/WeChatIcon.js
+18:36:23 [vite] page reload src/components/common/markdown/MarkdownRenderer.js
+18:36:23 [vite] hmr update /src/components/common/markdown/markdown.css
+18:36:23 [vite] page reload src/components/layout/Footer.js
+18:36:23 [vite] page reload src/components/layout/HeaderBar.js
+18:36:23 [vite] page reload src/components/layout/NoticeModal.js
+18:36:23 [vite] page reload src/components/layout/PageLayout.js
+18:36:23 [vite] page reload src/components/layout/SetupCheck.js
+18:36:23 [vite] page reload src/components/layout/SiderBar.js
+18:36:23 [vite] page reload src/components/playground/ChatArea.js
+18:36:23 [vite] page reload src/components/playground/CodeViewer.js
+18:36:23 [vite] page reload src/components/playground/ConfigManager.js
+18:36:23 [vite] page reload src/components/playground/CustomInputRender.js
+18:36:23 [vite] page reload src/components/playground/CustomRequestEditor.js
+18:36:23 [vite] page reload src/components/playground/DebugPanel.js
+18:36:23 [vite] page reload src/components/playground/FloatingButtons.js
+18:36:23 [vite] page reload src/components/playground/ImageUrlInput.js
+18:36:23 [vite] page reload src/components/playground/MessageActions.js
+18:36:23 [vite] page reload src/components/playground/MessageContent.js
+18:36:23 [vite] page reload src/components/playground/OptimizedComponents.js
+18:36:23 [vite] page reload src/components/playground/ParameterControl.js
+18:36:23 [vite] page reload src/components/playground/SettingsPanel.js
+18:36:23 [vite] page reload src/components/playground/ThinkingContent.js
+18:36:23 [vite] page reload src/components/playground/configStorage.js
+18:36:23 [vite] page reload src/components/playground/index.js
+18:36:23 [vite] page reload src/components/settings/ChannelSelectorModal.js
+18:36:23 [vite] page reload src/components/settings/ChatsSetting.js
+18:36:23 [vite] page reload src/components/settings/DashboardSetting.js
+18:36:23 [vite] page reload src/components/settings/DrawingSetting.js
+18:36:23 [vite] page reload src/components/settings/ModelSetting.js
+18:36:23 [vite] page reload src/components/settings/OperationSetting.js
+18:36:23 [vite] page reload src/components/settings/OtherSetting.js
+18:36:23 [vite] page reload src/components/settings/PaymentSetting.js
+18:36:23 [vite] page reload src/components/settings/PersonalSetting.js
+18:36:23 [vite] page reload src/components/settings/RateLimitSetting.js
+18:36:23 [vite] page reload src/components/settings/RatioSetting.js
+18:36:23 [vite] page reload src/components/settings/SystemSetting.js
+18:36:23 [vite] page reload src/components/table/ChannelsTable.js
+18:36:23 [vite] page reload src/components/table/LogsTable.js
+18:36:23 [vite] page reload src/components/table/MjLogsTable.js
+18:36:23 [vite] page reload src/components/table/ModelPricing.js
+18:36:23 [vite] page reload src/components/table/RedemptionsTable.js
+18:36:23 [vite] page reload src/components/table/TaskLogsTable.js
+18:36:23 [vite] page reload src/components/table/TokensTable.js
+18:36:23 [vite] page reload src/components/table/UsersTable.js
+18:36:23 [vite] page reload src/constants/channel.constants.js
+18:36:23 [vite] page reload src/constants/common.constant.js
+18:36:23 [vite] page reload src/constants/index.js
+18:36:23 [vite] page reload src/constants/playground.constants.js
+18:36:23 [vite] page reload src/constants/toast.constants.js
+18:36:23 [vite] page reload src/constants/user.constants.js
+18:36:23 [vite] page reload src/context/Status/index.js
+18:36:23 [vite] page reload src/context/Status/reducer.js
+18:36:23 [vite] page reload src/context/Theme/index.js
+18:36:23 [vite] page reload src/context/User/index.js
+18:36:23 [vite] page reload src/context/User/reducer.js
+18:36:23 [vite] page reload src/helpers/api.js
+18:36:23 [vite] page reload src/helpers/auth.js
+18:36:23 [vite] page reload src/helpers/boolean.js
+18:36:23 [vite] page reload src/helpers/data.js
+18:36:23 [vite] page reload src/helpers/history.js
+18:36:23 [vite] page reload src/helpers/index.js
+18:36:23 [vite] page reload src/helpers/log.js
+18:36:23 [vite] page reload src/helpers/oauth.js
+18:36:23 [vite] page reload src/helpers/render.js
+18:36:23 [vite] page reload src/helpers/token.js
+18:36:23 [vite] page reload src/helpers/utils.js
+18:36:23 [vite] page reload src/hooks/useApiRequest.js
+18:36:23 [vite] page reload src/hooks/useDataLoader.js
+18:36:23 [vite] page reload src/hooks/useIsMobile.js
+18:36:23 [vite] page reload src/hooks/useMessageActions.js
+18:36:23 [vite] page reload src/hooks/useMessageEdit.js
+18:36:23 [vite] page reload src/hooks/usePlaygroundState.js
+18:36:23 [vite] page reload src/hooks/useSidebarCollapsed.js
+18:36:23 [vite] page reload src/hooks/useSyncMessageAndCustomBody.js
+18:36:23 [vite] page reload src/hooks/useTableCompactMode.js
+18:36:23 [vite] page reload src/hooks/useTokenKeys.js
+18:36:23 [vite] page reload src/i18n/i18n.js
+18:36:23 [vite] page reload src/i18n/locales/en.json
+18:36:23 [vite] page reload src/i18n/locales/zh.json
+18:36:23 [vite] hmr update /src/index.css
+18:36:23 [vite] page reload src/index.jsx
+18:36:23 [vite] page reload src/pages/Channel/EditChannel.js
+18:36:23 [vite] page reload src/pages/Channel/EditTagModal.js
+18:36:23 [vite] page reload src/pages/Channel/index.js
+18:36:23 [vite] page reload src/pages/Chat/index.js
+18:36:23 [vite] page reload src/pages/Chat2Link/index.js
+18:36:23 [vite] page reload src/pages/Detail/index.js
+18:36:23 [vite] page reload src/pages/Home/index.js
+18:36:23 [vite] page reload src/pages/Log/index.js
+18:36:23 [vite] page reload src/pages/Midjourney/index.js
+18:36:23 [vite] page reload src/pages/NotFound/index.js
+18:36:23 [vite] page reload src/pages/Playground/index.js
+18:36:23 [vite] page reload src/pages/Pricing/index.js
+18:36:23 [vite] page reload src/pages/Redemption/EditRedemption.js
+18:36:23 [vite] page reload src/pages/Redemption/index.js
+18:36:23 [vite] page reload src/pages/Setting/Chat/SettingsChats.js
+18:36:23 [vite] page reload src/pages/Setting/Dashboard/SettingsAPIInfo.js
+18:36:23 [vite] page reload src/pages/Setting/Dashboard/SettingsAnnouncements.js
+18:36:23 [vite] page reload src/pages/Setting/Dashboard/SettingsDataDashboard.js
+18:36:23 [vite] page reload src/pages/Setting/Dashboard/SettingsFAQ.js
+18:36:23 [vite] page reload src/pages/Setting/Dashboard/SettingsUptimeKuma.js
+18:36:23 [vite] page reload src/pages/Setting/Drawing/SettingsDrawing.js
+18:36:23 [vite] page reload src/pages/Setting/Model/SettingClaudeModel.js
+18:36:23 [vite] page reload src/pages/Setting/Model/SettingGeminiModel.js
+18:36:23 [vite] page reload src/pages/Setting/Model/SettingGlobalModel.js
+18:36:23 [vite] page reload src/pages/Setting/Operation/SettingsCreditLimit.js
+18:36:23 [vite] page reload src/pages/Setting/Operation/SettingsGeneral.js
+18:36:23 [vite] page reload src/pages/Setting/Operation/SettingsLog.js
+18:36:23 [vite] page reload src/pages/Setting/Operation/SettingsMonitoring.js
+18:36:23 [vite] page reload src/pages/Setting/Operation/SettingsSensitiveWords.js
+18:36:23 [vite] page reload src/pages/Setting/Payment/SettingsGeneralPayment.js
+18:36:23 [vite] page reload src/pages/Setting/Payment/SettingsPaymentGateway.js
+18:36:23 [vite] page reload src/pages/Setting/Payment/SettingsPaymentGatewayStripe.js
+18:36:23 [vite] page reload src/pages/Setting/RateLimit/SettingsRequestRateLimit.js
+18:36:23 [vite] page reload src/pages/Setting/Ratio/GroupRatioSettings.js
+18:36:23 [vite] page reload src/pages/Setting/Ratio/ModelRatioSettings.js
+18:36:23 [vite] page reload src/pages/Setting/Ratio/ModelRationNotSetEditor.js
+18:36:23 [vite] page reload src/pages/Setting/Ratio/ModelSettingsVisualEditor.js
+18:36:23 [vite] page reload src/pages/Setting/Ratio/UpstreamRatioSync.js
+18:36:23 [vite] page reload src/pages/Setting/index.js
+18:36:23 [vite] page reload src/pages/Setup/index.js
+18:36:23 [vite] page reload src/pages/Task/index.js
+18:36:23 [vite] page reload src/pages/Token/EditToken.js
+18:36:23 [vite] page reload src/pages/Token/index.js
+18:36:23 [vite] page reload src/pages/TokenQuery/index.js
+18:36:23 [vite] page reload src/pages/TopUp/index.js
+18:36:23 [vite] page reload src/pages/User/AddUser.js
+18:36:23 [vite] page reload src/pages/User/EditUser.js
+18:36:23 [vite] page reload src/pages/User/index.js
+18:36:23 [vite] page reload tailwind.config.js
+18:36:23 [vite] vite.config.js changed, restarting server...
+Re-optimizing dependencies because lockfile has changed
+18:36:23 [vite] server restarted.
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
