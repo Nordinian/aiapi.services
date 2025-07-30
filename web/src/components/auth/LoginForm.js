@@ -1,22 +1,3 @@
-/*
-Copyright (C) 2025 QuantumNous
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-For commercial licensing, please contact support@quantumnous.com
-*/
-
 import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { UserContext } from '../../context/User/index.js';
@@ -50,6 +31,7 @@ import { IconGithubLogo, IconMail, IconLock } from '@douyinfe/semi-icons';
 import OIDCIcon from '../common/logo/OIDCIcon.js';
 import WeChatIcon from '../common/logo/WeChatIcon.js';
 import LinuxDoIcon from '../common/logo/LinuxDoIcon.js';
+import GoogleIcon from '../common/logo/GoogleIcon.js'; // Import the new Google icon
 import { useTranslation } from 'react-i18next';
 
 const LoginForm = () => {
@@ -71,6 +53,7 @@ const LoginForm = () => {
   const [showEmailLogin, setShowEmailLogin] = useState(false);
   const [wechatLoading, setWechatLoading] = useState(false);
   const [githubLoading, setGithubLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false); // Add loading state for Google
   const [oidcLoading, setOidcLoading] = useState(false);
   const [linuxdoLoading, setLinuxdoLoading] = useState(false);
   const [emailLoginLoading, setEmailLoginLoading] = useState(false);
@@ -234,6 +217,22 @@ const LoginForm = () => {
     }
   };
 
+  // Handler for Google login click
+  const handleGoogleClick = () => {
+    setGoogleLoading(true);
+    try {
+      // Assuming Google is configured as channel 2 in OIDC providers
+      // The channel ID should be dynamically fetched or configured if possible
+      onOIDCClicked(
+        status.oidc_authorization_endpoint,
+        status.oidc_client_id,
+        2 // Channel ID for Google
+      );
+    } finally {
+      setTimeout(() => setGoogleLoading(false), 3000);
+    }
+  };
+
   // 包装的OIDC登录点击处理
   const handleOIDCClick = () => {
     setOidcLoading(true);
@@ -320,6 +319,20 @@ const LoginForm = () => {
                     loading={githubLoading}
                   >
                     <span className="ml-3">{t('使用 GitHub 继续')}</span>
+                  </Button>
+                )}
+
+                {status.google_oauth && (
+                  <Button
+                    theme='outline'
+                    className="w-full h-12 flex items-center justify-center !rounded-full border border-gray-200 hover:bg-gray-50 transition-colors"
+                    type="tertiary"
+                    icon={<GoogleIcon />}
+                    size="large"
+                    onClick={handleGoogleClick}
+                    loading={googleLoading}
+                  >
+                    <span className="ml-3">{t('使用 Google 继续')}</span>
                   </Button>
                 )}
 
@@ -459,7 +472,7 @@ const LoginForm = () => {
                 </div>
               </Form>
 
-              {(status.github_oauth || status.oidc_enabled || status.wechat_login || status.linuxdo_oauth || status.telegram_oauth) && (
+              {(status.github_oauth || status.google_oauth || status.oidc_enabled || status.wechat_login || status.linuxdo_oauth || status.telegram_oauth) && (
                 <>
                   <Divider margin='12px' align='center'>
                     {t('或')}
@@ -542,8 +555,8 @@ const LoginForm = () => {
       {/* 背景模糊晕染球 */}
       <div className="blur-ball blur-ball-indigo" style={{ top: '-80px', right: '-80px', transform: 'none' }} />
       <div className="blur-ball blur-ball-teal" style={{ top: '50%', left: '-120px' }} />
-      <div className="w-full max-w-sm mt-[60px]">
-        {showEmailLogin || !(status.github_oauth || status.oidc_enabled || status.wechat_login || status.linuxdo_oauth || status.telegram_oauth)
+      <div className="w-full max-w-sm mt-[64px]">
+        {showEmailLogin || !(status.github_oauth || status.google_oauth || status.oidc_enabled || status.wechat_login || status.linuxdo_oauth || status.telegram_oauth)
           ? renderEmailLoginForm()
           : renderOAuthOptions()}
         {renderWeChatLoginModal()}

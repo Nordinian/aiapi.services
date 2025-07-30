@@ -1,22 +1,3 @@
-/*
-Copyright (C) 2025 QuantumNous
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-For commercial licensing, please contact support@quantumnous.com
-*/
-
 import React, { useEffect, useState, useContext } from 'react';
 import {
   API,
@@ -41,7 +22,7 @@ import {
   Skeleton,
   Divider,
 } from '@douyinfe/semi-ui';
-import { SiAlipay, SiWechat } from 'react-icons/si';
+import { SiAlipay, SiWechat, SiStripe } from 'react-icons/si';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from '../../context/User';
 import { StatusContext } from '../../context/Status/index.js';
@@ -66,10 +47,11 @@ const TopUp = () => {
 
   const [redemptionCode, setRedemptionCode] = useState('');
   const [topUpCode, setTopUpCode] = useState('');
+  // 统一的充值状态
   const [amount, setAmount] = useState(0.0);
-  const [minTopUp, setMinTopUp] = useState(statusState?.status?.min_topup || 1);
+  const [minTopUp, setMinTopUp] = useState(Math.min(statusState?.status?.min_topup || 1, statusState?.status?.stripe_min_topup || 1));
   const [topUpCount, setTopUpCount] = useState(
-    statusState?.status?.min_topup || 1,
+    Math.min(statusState?.status?.min_topup || 1, statusState?.status?.stripe_min_topup || 1),
   );
   const [topUpLink, setTopUpLink] = useState(
     statusState?.status?.top_up_link || '',
@@ -77,13 +59,10 @@ const TopUp = () => {
   const [enableOnlineTopUp, setEnableOnlineTopUp] = useState(
     statusState?.status?.enable_online_topup || false,
   );
+  const [enableStripeTopUp, setEnableStripeTopUp] = useState(
+    statusState?.status?.enable_stripe_topup || false,
+  );
   const [priceRatio, setPriceRatio] = useState(statusState?.status?.price || 1);
-
-  const [stripeAmount, setStripeAmount] = useState(0.0);
-  const [stripeMinTopUp, setStripeMinTopUp] = useState(statusState?.status?.stripe_min_topup || 1);
-  const [stripeTopUpCount, setStripeTopUpCount] = useState(statusState?.status?.stripe_min_topup || 1);
-  const [enableStripeTopUp, setEnableStripeTopUp] = useState(statusState?.status?.enable_stripe_topup || false);
-  const [stripeOpen, setStripeOpen] = useState(false);
 
   const [userQuota, setUserQuota] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -183,14 +162,22 @@ const TopUp = () => {
   };
 
   const preTopUp = async (payment) => {
-    if (!enableOnlineTopUp) {
+    if (payment === 'stripe' && !enableStripeTopUp) {
+      showError(t('管理员未开启Stripe充值！'));
+      return;
+    } else if (payment !== 'stripe' && !enableOnlineTopUp) {
       showError(t('管理员未开启在线充值！'));
       return;
     }
+    
     setPayWay(payment);
     setPaymentLoading(true);
     try {
-      await getAmount();
+      if (payment === 'stripe') {
+        await getStripeAmount();
+      } else {
+        await getAmount();
+      }
       if (topUpCount < minTopUp) {
         showError(t('充值数量不能小于') + minTopUp);
         return;
@@ -205,7 +192,11 @@ const TopUp = () => {
 
   const onlineTopUp = async () => {
     if (amount === 0) {
-      await getAmount();
+      if (payWay === 'stripe') {
+        await getStripeAmount();
+      } else {
+        await getAmount();
+      }
     }
     if (topUpCount < minTopUp) {
       showError('充值数量不能小于' + minTopUp);
@@ -213,43 +204,80 @@ const TopUp = () => {
     }
     setConfirmLoading(true);
     try {
-      const res = await API.post('/api/user/pay', {
+      let endpoint = '/api/user/pay'; // Default to e-pay
+      if (payWay === 'stripe') {
+        endpoint = '/api/user/stripe/pay';
+      }
+
+      const res = await API.post(endpoint, {
         amount: parseInt(topUpCount),
         top_up_code: topUpCode,
         payment_method: payWay,
       });
-      if (res !== undefined) {
+
+      if (res) {
         const { message, data } = res.data;
         if (message === 'success') {
-          let params = data;
-          let url = res.data.url;
-          let form = document.createElement('form');
-          form.action = url;
-          form.method = 'POST';
-          let isSafari =
-            navigator.userAgent.indexOf('Safari') > -1 &&
-            navigator.userAgent.indexOf('Chrome') < 1;
-          if (!isSafari) {
-            form.target = '_blank';
+          if (payWay === 'stripe') {
+            // Stripe payment flow
+            if (data.pay_link) {
+              // 检测是否为移动设备
+              const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+              const isSafari = navigator.userAgent.indexOf('Safari') > -1 && navigator.userAgent.indexOf('Chrome') < 1;
+              
+              if (isMobile || isSafari) {
+                // 移动端或Safari直接跳转，避免弹窗被阻止
+                window.location.href = data.pay_link;
+              } else {
+                // 桌面端打开新窗口
+                window.open(data.pay_link, '_blank');
+              }
+            } else {
+              showError(t('无法获取Stripe支付链接'));
+            }
+          } else {
+            // E-pay (or other form-based) payment flow
+            console.log('Payment response data:', data); // Debug logging
+            console.log('Complete response:', res.data); // Debug full response
+            let params = data.params;
+            let url = data.url;
+            if (!url || !params) {
+              console.error('Missing payment data - URL:', url, 'Params:', params);
+              console.error('Full response data structure:', JSON.stringify(data, null, 2));
+              showError(t('支付网关返回数据格式不正确') + 
+                ': URL=' + (url || 'null') + 
+                ', Params=' + (params ? JSON.stringify(params) : 'null') +
+                '. 完整响应: ' + JSON.stringify(data, null, 2));
+              return;
+            }
+            let form = document.createElement('form');
+            form.action = url;
+            form.method = 'POST';
+            let isSafari =
+              navigator.userAgent.indexOf('Safari') > -1 &&
+              navigator.userAgent.indexOf('Chrome') < 1;
+            if (!isSafari) {
+              form.target = '_blank';
+            }
+            for (let key in params) {
+              let input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = key;
+              input.value = params[key];
+              form.appendChild(input);
+            }
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
           }
-          for (let key in params) {
-            let input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = params[key];
-            form.appendChild(input);
-          }
-          document.body.appendChild(form);
-          form.submit();
-          document.body.removeChild(form);
         } else {
           showError(data);
         }
       } else {
-        showError(res);
+        showError(t('支付网关未返回有效响应'));
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
       showError(t('支付请求失败'));
     } finally {
       setOpen(false);
@@ -257,63 +285,8 @@ const TopUp = () => {
     }
   };
 
-  const stripePreTopUp = async () => {
-    if (!enableStripeTopUp) {
-      showError(t('管理员未开启在线充值！'));
-      return;
-    }
-    setPayWay('stripe');
-    setPaymentLoading(true);
-    try {
-      await getStripeAmount();
-      if (stripeTopUpCount < stripeMinTopUp) {
-        showError(t('充值数量不能小于') + stripeMinTopUp);
-        return;
-      }
-      setStripeOpen(true);
-    } catch (error) {
-      showError(t('获取金额失败'));
-    } finally {
-      setPaymentLoading(false);
-    }
-  };
 
-  const onlineStripeTopUp = async () => {
-    if (stripeAmount === 0) {
-      await getStripeAmount();
-    }
-    if (stripeTopUpCount < stripeMinTopUp) {
-      showError(t('充值数量不能小于') + stripeMinTopUp);
-      return;
-    }
-    setConfirmLoading(true);
-    try {
-      const res = await API.post('/api/user/stripe/pay', {
-        amount: parseInt(stripeTopUpCount),
-        payment_method: 'stripe',
-      });
-      if (res !== undefined) {
-        const { message, data } = res.data;
-        if (message === 'success') {
-          processStripeCallback(data);
-        } else {
-          showError(data);
-        }
-      } else {
-        showError(res);
-      }
-    } catch (err) {
-      console.log(err);
-      showError(t('支付请求失败'));
-    } finally {
-      setStripeOpen(false);
-      setConfirmLoading(false);
-    }
-  }
 
-  const processStripeCallback = (data) => {
-    window.open(data.pay_link, '_blank');
-  };
 
   const getUserQuota = async () => {
     setUserDataLoading(true);
@@ -375,27 +348,46 @@ const TopUp = () => {
     getAffLink().then();
     setTransferAmount(getQuotaPerUnit());
 
+    // 强制清除包含微信支付的旧数据 - 添加版本控制
+    const PAYMENT_CONFIG_VERSION = '2.7'; // 修复移动端Stripe支付问题，桌面端Stripe样式统一
+    const currentVersion = localStorage.getItem('payment_config_version');
+    
+    if (currentVersion !== PAYMENT_CONFIG_VERSION) {
+      console.log('[DEBUG] 支付配置版本不匹配，清除所有支付相关的localStorage数据');
+      localStorage.removeItem('pay_methods');
+      localStorage.setItem('payment_config_version', PAYMENT_CONFIG_VERSION);
+    }
+    
     let payMethods = localStorage.getItem('pay_methods');
     try {
       payMethods = JSON.parse(payMethods);
       if (payMethods && payMethods.length > 0) {
-        // 检查name和type是否为空
+        console.log('[DEBUG] 原始支付方式:', payMethods);
+        
+        // 直接过滤掉微信支付，保留支付宝
         payMethods = payMethods.filter((method) => {
-          return method.name && method.type;
+          const isValid = method.name && method.type;
+          const isNotWechat = method.type !== 'wx' && method.type !== 'wxpay';
+          console.log('[DEBUG] 检查支付方式:', method.name, method.type, 'isValid:', isValid, 'isNotWechat:', isNotWechat);
+          return isValid && isNotWechat;
         });
+        console.log('[DEBUG] 过滤后的支付方式:', payMethods);
         // 如果没有color，则设置默认颜色
         payMethods = payMethods.map((method) => {
           if (!method.color) {
-            if (method.type === 'zfb') {
+            if (method.type === 'alipay') {
               method.color = 'rgba(var(--semi-blue-5), 1)';
-            } else if (method.type === 'wx') {
+            } /* else if (method.type === 'wx') {
               method.color = 'rgba(var(--semi-green-5), 1)';
-            } else {
+            } */ else {
               method.color = 'rgba(var(--semi-primary-5), 1)';
             }
           }
           return method;
         });
+        
+        // 将过滤后的支付方式重新保存到localStorage
+        localStorage.setItem('pay_methods', JSON.stringify(payMethods));
         setPayMethods(payMethods);
       }
     } catch (e) {
@@ -406,14 +398,15 @@ const TopUp = () => {
 
   useEffect(() => {
     if (statusState?.status) {
-      setMinTopUp(statusState.status.min_topup || 1);
-      setTopUpCount(statusState.status.min_topup || 1);
+      const unifiedMinTopUp = Math.min(
+        statusState.status.min_topup || 1,
+        statusState.status.stripe_min_topup || 1
+      );
+      setMinTopUp(unifiedMinTopUp);
+      setTopUpCount(unifiedMinTopUp);
       setTopUpLink(statusState.status.top_up_link || '');
       setEnableOnlineTopUp(statusState.status.enable_online_topup || false);
       setPriceRatio(statusState.status.price || 1);
-
-      setStripeMinTopUp(statusState.status.stripe_min_topup || 1);
-      setStripeTopUpCount(statusState.status.stripe_min_topup || 1);
       setEnableStripeTopUp(statusState.status.enable_stripe_topup || false);
     }
   }, [statusState?.status]);
@@ -422,9 +415,6 @@ const TopUp = () => {
     return amount + ' ' + t('元');
   };
 
-  const renderStripeAmount = () => {
-    return stripeAmount + ' ' + t('元');
-  };
 
   const getAmount = async (value) => {
     if (value === undefined) {
@@ -455,7 +445,7 @@ const TopUp = () => {
 
   const getStripeAmount = async (value) => {
     if (value === undefined) {
-      value = stripeTopUpCount
+      value = topUpCount
     }
     setAmountLoading(true);
     try {
@@ -466,9 +456,9 @@ const TopUp = () => {
         const { message, data } = res.data;
         // showInfo(message);
         if (message === 'success') {
-          setStripeAmount(parseFloat(data));
+          setAmount(parseFloat(data));
         } else {
-          setStripeAmount(0);
+          setAmount(0);
           Toast.error({ content: '错误：' + data, id: 'getAmount' });
         }
       } else {
@@ -485,9 +475,6 @@ const TopUp = () => {
     setOpen(false);
   };
 
-  const handleStripeCancel = () => {
-    setStripeOpen(false);
-  };
 
   const handleTransferCancel = () => {
     setOpenTransfer(false);
@@ -509,7 +496,7 @@ const TopUp = () => {
   };
 
   return (
-    <div className='mx-auto relative min-h-screen lg:min-h-0 mt-[60px]'>
+    <div className='mx-auto relative min-h-screen lg:min-h-0 mt-[64px]'>
       {/* 划转模态框 */}
       <Modal
         title={
@@ -587,17 +574,26 @@ const TopUp = () => {
             <Text strong>{t('支付方式')}：</Text>
             <Text>
               {(() => {
+                if (payWay === 'stripe') {
+                  return (
+                    <div className='flex items-center'>
+                      <CreditCard className='mr-1' size={16} />
+                      Stripe
+                    </div>
+                  );
+                }
+                
                 const payMethod = payMethods.find(
                   (method) => method.type === payWay,
                 );
                 if (payMethod) {
                   return (
                     <div className='flex items-center'>
-                      {payMethod.type === 'zfb' ? (
+                      {payMethod.type === 'alipay' ? (
                         <SiAlipay className='mr-1' size={16} />
-                      ) : payMethod.type === 'wx' ? (
+                      ) : /* payMethod.type === 'wx' ? (
                         <SiWechat className='mr-1' size={16} />
-                      ) : (
+                      ) : */ (
                         <CreditCard className='mr-1' size={16} />
                       )}
                       {payMethod.name}
@@ -605,15 +601,20 @@ const TopUp = () => {
                   );
                 } else {
                   // 默认充值方式
-                  return payWay === 'zfb' ? (
+                  return payWay === 'alipay' ? (
                     <div className='flex items-center'>
                       <SiAlipay className='mr-1' size={16} />
                       {t('支付宝')}
                     </div>
-                  ) : (
+                  ) : /* (
                     <div className='flex items-center'>
                       <SiWechat className='mr-1' size={16} />
                       {t('微信')}
+                    </div>
+                  ) */ (
+                    <div className='flex items-center'>
+                      <CreditCard className='mr-1' size={16} />
+                      Stripe
                     </div>
                   );
                 }
@@ -623,24 +624,6 @@ const TopUp = () => {
         </div>
       </Modal>
 
-      <Modal
-          title={t('确定要充值吗')}
-          visible={stripeOpen}
-          onOk={onlineStripeTopUp}
-          onCancel={handleStripeCancel}
-          maskClosable={false}
-          size='small'
-          centered
-          confirmLoading={confirmLoading}
-      >
-        <p>
-          {t('充值数量')}：{stripeTopUpCount}
-        </p>
-        <p>
-          {t('实付金额')}：{renderStripeAmount()}
-        </p>
-        <p>{t('是否确认充值？')}</p>
-      </Modal>
 
       <div className='grid grid-cols-1 lg:grid-cols-12 gap-6'>
         {/* 左侧充值区域 */}
@@ -810,135 +793,55 @@ const TopUp = () => {
                       <Text strong className='block mb-3'>
                         {t('选择支付方式')}
                       </Text>
-                      {payMethods.length === 2 ? (
-                        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                          {payMethods.map((payMethod) => (
-                            <Button
-                              key={payMethod.type}
-                              type='primary'
-                              onClick={() => preTopUp(payMethod.type)}
-                              size='large'
-                              disabled={!enableOnlineTopUp}
-                              loading={paymentLoading && payWay === payMethod.type}
-                              icon={
-                                payMethod.type === 'zfb' ? (
-                                  <SiAlipay size={16} />
-                                ) : payMethod.type === 'wx' ? (
-                                  <SiWechat size={16} />
-                                ) : (
-                                  <CreditCard size={16} />
-                                )
-                              }
-                              style={{
-                                height: '40px',
-                                color: payMethod.color,
-                              }}
-                              className='transition-all hover:shadow-md w-full'
-                            >
-                              <span className='ml-1'>{payMethod.name}</span>
-                            </Button>
-                          ))}
-                        </div>
-                      ) : payMethods.length === 3 ? (
-                        <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-                          {payMethods.map((payMethod) => (
-                            <Button
-                              key={payMethod.type}
-                              type='primary'
-                              onClick={() => preTopUp(payMethod.type)}
-                              size='large'
-                              disabled={!enableOnlineTopUp}
-                              loading={paymentLoading && payWay === payMethod.type}
-                              icon={
-                                payMethod.type === 'zfb' ? (
-                                  <SiAlipay size={16} />
-                                ) : payMethod.type === 'wx' ? (
-                                  <SiWechat size={16} />
-                                ) : (
-                                  <CreditCard size={16} />
-                                )
-                              }
-                              style={{
-                                height: '40px',
-                                color: payMethod.color,
-                              }}
-                              className='transition-all hover:shadow-md w-full'
-                            >
-                              <span className='ml-1'>{payMethod.name}</span>
-                            </Button>
-                          ))}
-                        </div>
-                      ) : payMethods.length > 3 ? (
-                        <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
-                          {payMethods.map((payMethod) => (
-                            <Card
-                              key={payMethod.type}
-                              onClick={() => preTopUp(payMethod.type)}
-                              disabled={!enableOnlineTopUp}
-                              className={`cursor-pointer !rounded-xl p-0 transition-all hover:shadow-md ${paymentLoading && payWay === payMethod.type
-                                ? 'border-blue-400'
-                                : 'border-gray-200 hover:border-gray-300'
-                                }`}
-                              bodyStyle={{
-                                padding: '10px',
-                                textAlign: 'center',
-                                opacity: !enableOnlineTopUp ? 0.5 : 1
-                              }}
-                            >
-                              {paymentLoading && payWay === payMethod.type ? (
-                                <div className='flex flex-col items-center justify-center h-full'>
-                                  <div className='mb-1'>
-                                    <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500'></div>
-                                  </div>
-                                  <div className='text-xs text-gray-500'>{t('处理中')}</div>
-                                </div>
+                      
+                      {/* 统一的支付方式按钮布局 */}
+                      <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                        {/* 支付宝按钮 */}
+                        {payMethods.map((payMethod) => (
+                          <Button
+                            key={payMethod.type}
+                            type='primary'
+                            onClick={() => preTopUp(payMethod.type)}
+                            size='large'
+                            disabled={!enableOnlineTopUp}
+                            loading={paymentLoading && payWay === payMethod.type}
+                            icon={
+                              payMethod.type === 'alipay' ? (
+                                <SiAlipay size={16} />
                               ) : (
-                                <>
-                                  <div className='flex items-center justify-center mb-1'>
-                                    {payMethod.type === 'zfb' ? (
-                                      <SiAlipay size={20} color={payMethod.color} />
-                                    ) : payMethod.type === 'wx' ? (
-                                      <SiWechat size={20} color={payMethod.color} />
-                                    ) : (
-                                      <CreditCard size={20} color={payMethod.color} />
-                                    )}
-                                  </div>
-                                  <div className='text-sm font-medium'>{payMethod.name}</div>
-                                </>
-                              )}
-                            </Card>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className='grid grid-cols-1 gap-3'>
-                          {payMethods.map((payMethod) => (
-                            <Button
-                              key={payMethod.type}
-                              type='primary'
-                              onClick={() => preTopUp(payMethod.type)}
-                              size='large'
-                              disabled={!enableOnlineTopUp}
-                              loading={paymentLoading && payWay === payMethod.type}
-                              icon={
-                                payMethod.type === 'zfb' ? (
-                                  <SiAlipay size={16} />
-                                ) : payMethod.type === 'wx' ? (
-                                  <SiWechat size={16} />
-                                ) : (
-                                  <CreditCard size={16} />
-                                )
-                              }
-                              style={{
-                                height: '40px',
-                                color: payMethod.color,
-                              }}
-                              className='transition-all hover:shadow-md w-full'
-                            >
-                              <span className='ml-1'>{payMethod.name}</span>
-                            </Button>
-                          ))}
-                        </div>
-                      )}
+                                <CreditCard size={16} />
+                              )
+                            }
+                            style={{
+                              height: '40px',
+                              color: payMethod.color,
+                            }}
+                            className='transition-all hover:shadow-md w-full'
+                          >
+                            <span className='ml-1'>{payMethod.name}</span>
+                          </Button>
+                        ))}
+                        
+                        {/* Stripe按钮 */}
+                        {enableStripeTopUp && (
+                          <Button
+                            key='stripe'
+                            type='primary'
+                            onClick={() => preTopUp('stripe')}
+                            size='large'
+                            disabled={!enableStripeTopUp}
+                            loading={paymentLoading && payWay === 'stripe'}
+                            icon={<SiStripe size={16} />}
+                            style={{
+                              height: '40px',
+                              color: '#635bff',
+                            }}
+                            className='transition-all hover:shadow-md w-full'
+                          >
+                            <span className='ml-1'>Stripe</span>
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </>
@@ -955,88 +858,6 @@ const TopUp = () => {
                 />
               )}
 
-              {enableStripeTopUp && (
-                  <>
-                    {/* 桌面端显示的自定义金额和支付按钮 */}
-                    <div className='hidden md:block space-y-4'>
-                      <Divider style={{ margin: '24px 0' }}>
-                        <Text className='text-sm font-medium'>
-                          {t(!enableOnlineTopUp ? '或输入自定义金额' : 'Stripe')}
-                        </Text>
-                      </Divider>
-
-                      <div>
-                        <div className='flex justify-between mb-2'>
-                          <Text strong>{t('充值数量')}</Text>
-                          {amountLoading ? (
-                              <Skeleton.Title
-                                  style={{ width: '80px', height: '16px' }}
-                              />
-                          ) : (
-                              <Text type='tertiary'>
-                                {t('实付金额：') + renderStripeAmount()}
-                              </Text>
-                          )}
-                        </div>
-                        <InputNumber
-                            disabled={!enableStripeTopUp}
-                            placeholder={
-                                t('充值数量，最低 ') + renderQuotaWithAmount(stripeMinTopUp)
-                            }
-                            value={stripeTopUpCount}
-                            min={stripeMinTopUp}
-                            max={999999999}
-                            step={1}
-                            precision={0}
-                            onChange={async (value) => {
-                              if (value && value >= 1) {
-                                setStripeTopUpCount(value);
-                                setSelectedPreset(null);
-                                await getStripeAmount(value);
-                              }
-                            }}
-                            onBlur={(e) => {
-                              const value = parseInt(e.target.value);
-                              if (!value || value < 1) {
-                                setStripeTopUpCount(1);
-                                getStripeAmount(1);
-                              }
-                            }}
-                            size='large'
-                            className='w-full'
-                            formatter={(value) => (value ? `${value}` : '')}
-                            parser={(value) =>
-                                value ? parseInt(value.replace(/[^\d]/g, '')) : 0
-                            }
-                        />
-                      </div>
-
-                      <div>
-                        <Text strong className='block mb-3'>
-                          {t('选择支付方式')}
-                        </Text>
-                          <div className='grid grid-cols-1 gap-3'>
-                            <Button
-                                key='stripe'
-                                type='primary'
-                                onClick={() => stripePreTopUp()}
-                                size='large'
-                                disabled={!enableStripeTopUp}
-                                loading={paymentLoading && payWay === 'stripe'}
-                                icon={<CreditCard size={16} />}
-                                style={{
-                                  height: '40px',
-                                  color: '#b161fe',
-                                }}
-                                className='transition-all hover:shadow-md w-full'
-                            >
-                              <span className='ml-1'>Stripe</span>
-                            </Button>
-                          </div>
-                      </div>
-                    </div>
-                  </>
-              )}
 
               <Divider style={{ margin: '24px 0' }}>
                 <Text className='text-sm font-medium'>{t('兑换码充值')}</Text>
@@ -1254,70 +1075,50 @@ const TopUp = () => {
               />
             </div>
 
-            <div>
-              {payMethods.length === 2 ? (
-                <div className='grid grid-cols-2 gap-3'>
-                  {payMethods.map((payMethod) => (
-                    <Button
-                      key={payMethod.type}
-                      type='primary'
-                      onClick={() => preTopUp(payMethod.type)}
-                      disabled={!enableOnlineTopUp}
-                      loading={paymentLoading && payWay === payMethod.type}
-                      icon={
-                        payMethod.type === 'zfb' ? (
-                          <SiAlipay size={16} />
-                        ) : payMethod.type === 'wx' ? (
-                          <SiWechat size={16} />
-                        ) : (
-                          <CreditCard size={16} />
-                        )
-                      }
-                      style={{
-                        color: payMethod.color,
-                      }}
-                      className='h-10'
-                    >
-                      <span className='ml-1'>{payMethod.name}</span>
-                    </Button>
-                  ))}
-                </div>
-              ) : (
-                <div className='grid grid-cols-4 gap-2'>
-                  {payMethods.map((payMethod) => (
-                    <Card
-                      key={payMethod.type}
-                      onClick={() => preTopUp(payMethod.type)}
-                      disabled={!enableOnlineTopUp}
-                      className={`cursor-pointer !rounded-xl p-0 transition-all ${paymentLoading && payWay === payMethod.type
-                        ? 'border-blue-400'
-                        : 'border-gray-200'
-                        }`}
-                      bodyStyle={{
-                        padding: '8px',
-                        textAlign: 'center',
-                        opacity: !enableOnlineTopUp ? 0.5 : 1
-                      }}
-                    >
-                      {paymentLoading && payWay === payMethod.type ? (
-                        <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mx-auto'></div>
-                      ) : (
-                        <>
-                          <div className='flex justify-center'>
-                            {payMethod.type === 'zfb' ? (
-                              <SiAlipay size={18} color={payMethod.color} />
-                            ) : payMethod.type === 'wx' ? (
-                              <SiWechat size={18} color={payMethod.color} />
-                            ) : (
-                              <CreditCard size={18} color={payMethod.color} />
-                            )}
-                          </div>
-                          <div className='text-xs mt-1'>{payMethod.name}</div>
-                        </>
-                      )}
-                    </Card>
-                  ))}
-                </div>
+            {/* 移动端统一支付方式布局 */}
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+              {/* 支付宝按钮 */}
+              {payMethods.map((payMethod) => (
+                <Button
+                  key={payMethod.type}
+                  type='primary'
+                  onClick={() => preTopUp(payMethod.type)}
+                  disabled={!enableOnlineTopUp}
+                  loading={paymentLoading && payWay === payMethod.type}
+                  icon={
+                    payMethod.type === 'alipay' ? (
+                      <SiAlipay size={16} />
+                    ) : (
+                      <CreditCard size={16} />
+                    )
+                  }
+                  style={{
+                    height: '50px',
+                    color: 'rgba(var(--semi-blue-5), 1)',
+                  }}
+                  className='transition-all hover:shadow-md w-full'
+                >
+                  <span className='ml-1'>{payMethod.name}</span>
+                </Button>
+              ))}
+              
+              {/* Stripe按钮 */}
+              {enableStripeTopUp && (
+                <Button
+                  key='stripe'
+                  type='primary'
+                  onClick={() => preTopUp('stripe')}
+                  disabled={!enableStripeTopUp}
+                  loading={paymentLoading && payWay === 'stripe'}
+                  icon={<SiStripe size={16} />}
+                  style={{
+                    height: '50px',
+                    color: '#635bff',
+                  }}
+                  className='transition-all hover:shadow-md w-full'
+                >
+                  <span className='ml-1'>Stripe</span>
+                </Button>
               )}
             </div>
           </div>

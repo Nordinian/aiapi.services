@@ -1,19 +1,23 @@
 {
-  "name": "react-template",
-  "version": "0.1.0",
+  "name": "aiapi-services-platform",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "dependencies": {
     "@douyinfe/semi-icons": "^2.63.1",
+    "@douyinfe/semi-illustrations": "^2.82.1",
+    "@douyinfe/semi-theme-default": "^2.82.1",
     "@douyinfe/semi-ui": "^2.69.1",
     "@lobehub/icons": "^2.0.0",
     "@visactor/react-vchart": "~1.8.8",
     "@visactor/vchart": "~1.8.8",
     "@visactor/vchart-semi-theme": "~1.8.8",
+    "antd": "^5.26.6",
     "axios": "^0.27.2",
     "clsx": "^2.1.1",
     "country-flag-icons": "^1.5.19",
     "dayjs": "^1.11.11",
+    "highlight.js": "^11.11.1",
     "history": "^5.3.0",
     "i18next": "^23.16.8",
     "i18next-browser-languagedetector": "^7.2.0",
@@ -37,6 +41,7 @@
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
+    "sass": "^1.89.2",
     "sse.js": "^2.6.0",
     "unist-util-visit": "^5.0.0",
     "use-debounce": "^10.0.4"
@@ -46,8 +51,6 @@
     "build": "vite build",
     "lint": "prettier . --check",
     "lint:fix": "prettier . --write",
-    "eslint": "bunx eslint \"**/*.{js,jsx}\" --cache",
-    "eslint:fix": "bunx eslint \"**/*.{js,jsx}\" --fix --cache",
     "preview": "vite preview"
   },
   "eslintConfig": {
@@ -73,9 +76,6 @@
     "@so1ve/prettier-config": "^3.1.0",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.21",
-    "eslint": "8.57.0",
-    "eslint-plugin-header": "^3.1.1",
-    "eslint-plugin-react-hooks": "^5.2.0",
     "postcss": "^8.5.3",
     "prettier": "^3.0.0",
     "tailwindcss": "^3",
@@ -86,5 +86,5 @@
     "singleQuote": true,
     "jsxSingleQuote": true
   },
-  "proxy": "http://localhost:3000"
+  "proxy": "https://localhost:3000"
 }

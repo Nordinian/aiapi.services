@@ -121,7 +121,6 @@
   "WeChat id 为空！": "WeChat ID is empty!",
   "username 为空！": "Username is empty!",
   "邮箱地址或密码为空！": "Email address or password is empty!",
-  "OpenAI 接口聚合管理，支持多种渠道包括 Azure，可用于二次分发管理 key，仅单可执行文件，已打包好 Docker 镜像，一键部署，开箱即用": "OpenAI API aggregation management system supporting multiple channels including Azure. Can be used for key management and redistribution. Single executable file, pre-packaged Docker image, one-click deployment, ready to use",
   "未知类型": "Unknown type",
   "不支持": "Not supported",
   "操作成功完成！": "Operation completed successfully!",
@@ -1804,5 +1803,11 @@
   "已选择 {{selected}} / {{total}}": "Selected {{selected}} / {{total}}",
   "新获取的模型": "New models",
   "已有的模型": "Existing models",
-  "搜索模型": "Search models"
+  "搜索模型": "Search models",
+  "网站标题": "aiapi.services - Leading AI Model Aggregation Platform",
+  "网站描述": "Leading AI Model Aggregation Platform - Unified access to global top AI models through a single interface, providing fast, stable, and affordable enterprise-grade API services.",
+  "网站关键词": "AI,AI Models,API Aggregation,AI Gateway,Artificial Intelligence,Machine Learning,Deep Learning,GPT,Claude,Gemini,Anthropic,Veo,Veo3,Deepseek",
+  "提供极速稳定实惠的企业级API服务": "Providing fast, stable, and affordable enterprise-grade API services",
+  "聚合全球顶尖AI大模型供应商": "Aggregating global leading AI model providers",
+  "令牌查询": "Token Query"
 }

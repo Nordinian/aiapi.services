@@ -1,22 +1,3 @@
-/*
-Copyright (C) 2025 QuantumNous
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-For commercial licensing, please contact support@quantumnous.com
-*/
-
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -75,7 +56,7 @@ const SiderBar = ({ onNavigate = () => { } }) => {
             : 'tableHiddle',
       },
       {
-        text: t('令牌管理'),
+        text: t('API令牌'),
         itemKey: 'token',
         to: '/token',
       },
@@ -128,13 +109,13 @@ const SiderBar = ({ onNavigate = () => { } }) => {
   const adminItems = useMemo(
     () => [
       {
-        text: t('渠道管理'),
+        text: t('渠道'),
         itemKey: 'channel',
         to: '/channel',
         className: isAdmin() ? '' : 'tableHiddle',
       },
       {
-        text: t('兑换码管理'),
+        text: t('兑换码'),
         itemKey: 'redemption',
         to: '/redemption',
         className: isAdmin() ? '' : 'tableHiddle',
@@ -440,7 +421,6 @@ const SiderBar = ({ onNavigate = () => { } }) => {
             />
           }
           onClick={toggleCollapsed}
-          icononly={collapsed}
           style={collapsed ? { padding: '4px', width: '100%' } : { padding: '4px 12px', width: '100%' }}
         >
           {!collapsed ? t('收起侧边栏') : null}

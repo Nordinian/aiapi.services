@@ -1,22 +1,3 @@
-/*
-Copyright (C) 2025 QuantumNous
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-For commercial licensing, please contact support@quantumnous.com
-*/
-
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { UserContext } from '../../context/User/index.js';
@@ -60,7 +41,6 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
   const isMobile = useIsMobile();
   const [collapsed, toggleCollapsed] = useSidebarCollapsed();
   const [isLoading, setIsLoading] = useState(true);
-  const [logoLoaded, setLogoLoaded] = useState(false);
   let navigate = useNavigate();
   const [currentLang, setCurrentLang] = useState(i18n.language);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -112,16 +92,12 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
   };
 
   useEffect(() => {
-    setUnreadCount(calculateUnreadCount());
+    const count = calculateUnreadCount();
+    setUnreadCount(prevCount => prevCount !== count ? count : prevCount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [announcements]);
 
   const mainNavLinks = [
-    {
-      text: t('首页'),
-      itemKey: 'home',
-      to: '/',
-    },
     {
       text: t('控制台'),
       itemKey: 'console',
@@ -143,9 +119,10 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
       ]
       : []),
     {
-      text: t('关于'),
-      itemKey: 'about',
-      to: '/about',
+      text: t('令牌查询'),
+      itemKey: 'token-query',
+      isExternal: true,
+      externalLink: 'https://query.aiapi.services/',
     },
   ];
 
@@ -181,8 +158,13 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
       }
       const mergedKeys = Array.from(new Set([...readKeys, ...announcements.map(getAnnouncementKey)]));
       localStorage.setItem('notice_read_keys', JSON.stringify(mergedKeys));
+      // 使用 setTimeout 确保状态更新在下一个渲染周期
+      setTimeout(() => {
+        setUnreadCount(0);
+      }, 0);
+    } else {
+      setUnreadCount(0);
     }
-    setUnreadCount(0);
   };
 
   useEffect(() => {
@@ -227,23 +209,12 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
     }
   }, [statusState?.status]);
 
-  useEffect(() => {
-    setLogoLoaded(false);
-    if (!logo) return;
-    const img = new Image();
-    img.src = logo;
-    img.onload = () => setLogoLoaded(true);
-  }, [logo]);
-
   const handleLanguageChange = (lang) => {
     i18n.changeLanguage(lang);
     setMobileMenuOpen(false);
   };
 
   const handleNavLinkClick = (itemKey) => {
-    if (itemKey === 'home') {
-      // styleDispatch(styleActions.setSider(false)); // This line is removed
-    }
     setMobileMenuOpen(false);
   };
 
@@ -252,16 +223,16 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
       const skeletonLinkClasses = isMobileView
         ? 'flex items-center gap-1 p-3 w-full rounded-md'
         : 'flex items-center gap-1 p-2 rounded-md';
-      return Array(4)
+      return Array(3)
         .fill(null)
         .map((_, index) => (
           <div key={index} className={skeletonLinkClasses}>
             <Skeleton
               loading={true}
-              active
+              active={true}
               placeholder={
                 <Skeleton.Title
-                  active
+                  active={true}
                   style={{ width: isMobileView ? 100 : 60, height: 16 }}
                 />
               }
@@ -318,16 +289,16 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
         <div className="flex items-center p-1 rounded-full bg-semi-color-fill-0 dark:bg-semi-color-fill-1">
           <Skeleton
             loading={true}
-            active
-            placeholder={<Skeleton.Avatar active size="extra-small" className="shadow-sm" />}
+            active={true}
+            placeholder={<Skeleton.Avatar active={true} size="extra-small" className="shadow-sm" />}
           />
           <div className="ml-1.5 mr-1">
             <Skeleton
               loading={true}
-              active
+              active={true}
               placeholder={
                 <Skeleton.Title
-                  active
+                  active={true}
                   style={{ width: isMobile ? 15 : 50, height: 12 }}
                 />
               }
@@ -364,7 +335,7 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
               >
                 <div className="flex items-center gap-2">
                   <IconKey size="small" className="text-gray-500 dark:text-gray-400" />
-                  <span>{t('令牌管理')}</span>
+                  <span>{t('API令牌')}</span>
                 </div>
               </Dropdown.Item>
               <Dropdown.Item
@@ -505,28 +476,27 @@ const HeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
               />
             </div>
             <Link to="/" onClick={() => handleNavLinkClick('home')} className="flex items-center gap-2 group ml-2">
-              <div className="relative w-8 h-8 md:w-8 md:h-8">
-                {(isLoading || !logoLoaded) && (
+              <Skeleton
+                loading={isLoading}
+                active={true}
+                placeholder={
                   <Skeleton.Image
-                    active
-                    className="absolute inset-0 !rounded-full"
-                    style={{ width: '100%', height: '100%' }}
+                    active={true}
+                    className="h-7 md:h-8 !rounded-full"
+                    style={{ width: 32, height: 32 }}
                   />
-                )}
-                <img
-                  src={logo}
-                  alt="logo"
-                  className={`absolute inset-0 w-full h-full transition-opacity duration-200 group-hover:scale-105 rounded-full ${(!isLoading && logoLoaded) ? 'opacity-100' : 'opacity-0'}`}
-                />
-              </div>
+                }
+              >
+                <img src={logo} alt="logo" className="h-7 md:h-8 transition-transform duration-300 ease-in-out group-hover:scale-105 rounded-full" />
+              </Skeleton>
               <div className="hidden md:flex items-center gap-2">
                 <div className="flex items-center gap-2">
                   <Skeleton
                     loading={isLoading}
-                    active
+                    active={true}
                     placeholder={
                       <Skeleton.Title
-                        active
+                        active={true}
                         style={{ width: 120, height: 24 }}
                       />
                     }
