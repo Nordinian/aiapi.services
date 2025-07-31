@@ -37,7 +37,23 @@ var claudeModelMap = map[string]string{
 	"claude-opus-4-20250514":     "claude-opus-4@20250514",
 }
 
-const anthropicVersion = "vertex-2023-10-16"
+// Anthropic API versions supported by Vertex AI
+const (
+	// Default version - stable and widely supported
+	anthropicVersionDefault = "2023-06-01"
+	// Newer version - may support more features but not guaranteed availability
+	anthropicVersionNewer = "2024-06-01" 
+	// Latest version - experimental support
+	anthropicVersionLatest = "2025-01-15"
+)
+
+// getAnthropicVersion returns the appropriate Anthropic version for Vertex AI
+// Can be made configurable in the future
+func getAnthropicVersion() string {
+	// Use the latest version to support WebSearch and other modern tools
+	// Updated to support web_search_20250305 tool type
+	return anthropicVersionLatest
+}
 
 type Adaptor struct {
 	RequestMode        int
@@ -50,7 +66,7 @@ func (a *Adaptor) ConvertClaudeRequest(c *gin.Context, info *relaycommon.RelayIn
 	} else {
 		c.Set("request_model", request.Model)
 	}
-	vertexClaudeReq := copyRequest(request, anthropicVersion)
+	vertexClaudeReq := copyRequest(request, getAnthropicVersion())
 	return vertexClaudeReq, nil
 }
 
@@ -119,9 +135,9 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 		}
 	} else if a.RequestMode == RequestModeClaude {
 		if info.IsStream {
-			suffix = "streamRawPredict?alt=sse"
+			suffix = "streamGenerateContent?alt=sse"
 		} else {
-			suffix = "rawPredict"
+			suffix = "generateContent"
 		}
 		model := info.UpstreamModelName
 		if v, ok := claudeModelMap[info.UpstreamModelName]; ok {
@@ -174,7 +190,7 @@ func (a *Adaptor) ConvertOpenAIRequest(c *gin.Context, info *relaycommon.RelayIn
 		if err != nil {
 			return nil, err
 		}
-		vertexClaudeReq := copyRequest(claudeReq, anthropicVersion)
+		vertexClaudeReq := copyRequest(claudeReq, getAnthropicVersion())
 		c.Set("request_model", claudeReq.Model)
 		info.UpstreamModelName = claudeReq.Model
 		return vertexClaudeReq, nil
