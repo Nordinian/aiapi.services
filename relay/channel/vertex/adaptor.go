@@ -66,6 +66,16 @@ func (a *Adaptor) ConvertClaudeRequest(c *gin.Context, info *relaycommon.RelayIn
 	} else {
 		c.Set("request_model", request.Model)
 	}
+	
+	// Transform WebSearch tools to supported tools for Vertex AI
+	if request.Tools != nil {
+		transformedTools, err := transformWebSearchTools(request.Tools)
+		if err != nil {
+			return nil, fmt.Errorf("failed to transform tools: %w", err)
+		}
+		request.Tools = transformedTools
+	}
+	
 	vertexClaudeReq := copyRequest(request, getAnthropicVersion())
 	return vertexClaudeReq, nil
 }
@@ -190,6 +200,16 @@ func (a *Adaptor) ConvertOpenAIRequest(c *gin.Context, info *relaycommon.RelayIn
 		if err != nil {
 			return nil, err
 		}
+		
+		// Transform WebSearch tools to supported tools for Vertex AI
+		if claudeReq.Tools != nil {
+			transformedTools, err := transformWebSearchTools(claudeReq.Tools)
+			if err != nil {
+				return nil, fmt.Errorf("failed to transform tools: %w", err)
+			}
+			claudeReq.Tools = transformedTools
+		}
+		
 		vertexClaudeReq := copyRequest(claudeReq, getAnthropicVersion())
 		c.Set("request_model", claudeReq.Model)
 		info.UpstreamModelName = claudeReq.Model
@@ -275,4 +295,65 @@ func (a *Adaptor) GetModelList() []string {
 
 func (a *Adaptor) GetChannelName() string {
 	return ChannelName
+}
+
+// transformWebSearchTools converts WebSearch tools to supported Vertex AI tools
+func transformWebSearchTools(tools any) (any, error) {
+	if tools == nil {
+		return nil, nil
+	}
+
+	toolsList, ok := tools.([]any)
+	if !ok {
+		return tools, nil
+	}
+
+	transformedTools := make([]any, 0, len(toolsList))
+	
+	for _, tool := range toolsList {
+		if toolMap, ok := tool.(map[string]any); ok {
+			toolType, hasType := toolMap["type"].(string)
+			
+			// Check if this is a WebSearch tool that needs transformation
+			if hasType && (toolType == "web_search_20250305" || toolType == "WebSearch" || toolType == "websearch") {
+				// Add bash tool for web requests (name must be "bash" for bash_20250124 type)
+				bashTool := map[string]any{
+					"type": "bash_20250124",
+					"name": "bash",
+				}
+				transformedTools = append(transformedTools, bashTool)
+				
+				// Add custom tool to provide web search interface
+				customTool := map[string]any{
+					"type": "custom",
+					"name": "web_search",
+					"description": "Search the web for information. Use the bash tool to execute curl commands for web searching. Example: curl -s 'https://www.google.com/search?q=your+query' or curl -s 'https://duckduckgo.com/?q=your+query&format=json'",
+					"input_schema": map[string]any{
+						"type": "object",
+						"properties": map[string]any{
+							"query": map[string]any{
+								"type": "string",
+								"description": "Search query to find information about",
+							},
+							"max_results": map[string]any{
+								"type": "integer",
+								"description": "Maximum number of results to return",
+								"default": 5,
+							},
+						},
+						"required": []string{"query"},
+					},
+				}
+				transformedTools = append(transformedTools, customTool)
+			} else {
+				// Keep other tools unchanged
+				transformedTools = append(transformedTools, tool)
+			}
+		} else {
+			// Keep non-map tools unchanged
+			transformedTools = append(transformedTools, tool)
+		}
+	}
+	
+	return transformedTools, nil
 }
