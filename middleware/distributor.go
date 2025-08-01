@@ -9,6 +9,7 @@ import (
 	"one-api/dto"
 	"one-api/model"
 	relayconstant "one-api/relay/constant"
+	"one-api/relay/channel/vertex"
 	"one-api/service"
 	"one-api/setting"
 	"one-api/setting/ratio_setting"
@@ -241,6 +242,16 @@ func getModelRequest(c *gin.Context) (*ModelRequest, bool, error) {
 		}
 		common.SetContextKey(c, constant.ContextKeyTokenGroup, modelRequest.Group)
 	}
+	
+	// 应用模型路由逻辑
+	if modelRequest.Model != "" {
+		routedModel := applyModelRouting(c, modelRequest.Model)
+		if routedModel != modelRequest.Model {
+			fmt.Printf("[DEBUG] 模型路由: %s → %s\n", modelRequest.Model, routedModel)
+			modelRequest.Model = routedModel
+		}
+	}
+	
 	return &modelRequest, shouldSelectChannel, nil
 }
 
@@ -322,4 +333,77 @@ func extractModelNameFromGeminiPath(path string) string {
 
 	// 返回模型名部分
 	return path[startIndex : startIndex+colonIndex]
+}
+
+// applyModelRouting 应用模型路由逻辑
+func applyModelRouting(c *gin.Context, originalModel string) string {
+	// 创建模型路由器
+	router := vertex.NewModelRouter()
+	
+	// 提取第一条用户消息用于/model命令解析
+	var messageContent string
+	
+	// 尝试解析请求体以获取消息内容（仅用于/model命令检测）
+	if strings.Contains(c.Request.URL.Path, "/v1/messages") {
+		var claudeRequest dto.ClaudeRequest
+		if err := common.UnmarshalBodyReusable(c, &claudeRequest); err == nil {
+			for _, msg := range claudeRequest.Messages {
+				if msg.Role == "user" {
+					messageContent = msg.GetStringContent()
+					if messageContent != "" {
+						break
+					}
+				}
+			}
+		}
+	} else if strings.Contains(c.Request.URL.Path, "/v1/chat/completions") {
+		var openaiRequest dto.GeneralOpenAIRequest
+		if err := common.UnmarshalBodyReusable(c, &openaiRequest); err == nil {
+			for _, msg := range openaiRequest.Messages {
+				if msg.Role == "user" {
+					if content, ok := msg.Content.(string); ok {
+						messageContent = content
+						break
+					}
+				}
+			}
+		}
+	}
+	
+	// 生成会话ID
+	sessionID := fmt.Sprintf("%s_%s", c.ClientIP(), c.Request.Header.Get("X-Request-Id"))
+	
+	// 1. 检查消息中的/model命令
+	if messageContent != "" {
+		if modelFromCommand, remainingMessage, found := router.ParseModelCommand(messageContent); found {
+			router.SetSessionModel(sessionID, modelFromCommand)
+			// 更新消息内容（移除/model命令）
+			c.Set("updated_message_content", remainingMessage)
+			fmt.Printf("[DEBUG] 检测到/model命令: %s\n", modelFromCommand)
+			return modelFromCommand
+		}
+	}
+	
+	// 2. 检查环境变量/请求头
+	headers := make(map[string]string)
+	for key, values := range c.Request.Header {
+		if len(values) > 0 {
+			headers[key] = values[0]
+		}
+	}
+	
+	if modelFromEnv := router.ExtractModelFromEnvironment(headers); modelFromEnv != "" {
+		router.SetSessionModel(sessionID, modelFromEnv)
+		fmt.Printf("[DEBUG] 检测到环境变量模型: %s\n", modelFromEnv)
+		return modelFromEnv
+	}
+	
+	// 3. 检查会话中已设置的模型
+	if sessionModel, found := router.GetSessionModel(sessionID); found {
+		fmt.Printf("[DEBUG] 使用会话模型: %s\n", sessionModel)
+		return sessionModel
+	}
+	
+	// 4. 返回原始模型
+	return originalModel
 }
