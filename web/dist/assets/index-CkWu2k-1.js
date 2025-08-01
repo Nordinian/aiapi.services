@@ -1,0 +1,1 @@
+import{r,j as e}from"./index-BDDU4eEn.js";const t=()=>(r.useEffect(()=>{window.location.href="https://query.aiapi.services/"},[]),e.jsx("div",{className:"flex justify-center items-center h-screen",children:e.jsxs("div",{className:"text-center",children:[e.jsx("p",{children:"正在跳转到令牌查询页面..."}),e.jsx("p",{children:"Redirecting to token query page..."})]})}));export{t as default};
