@@ -1,0 +1,13 @@
+    steps:
+    - name: 'gcr.io/cloud-builders/docker'
+      args:
+      - 'build'
+      - '-t'
+      - 'us-west1-docker.pkg.dev/aiapi-services/aiapi-services/aiapi-services:alpha'
+      - '.'
+
+    images:
+    - 'us-west1-docker.pkg.dev/aiapi-services/aiapi-services/aiapi-services:alpha'
+
+    options:
+      logging: CLOUD_LOGGING_ONLY
