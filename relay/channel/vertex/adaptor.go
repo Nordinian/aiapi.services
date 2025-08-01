@@ -298,8 +298,9 @@ func transformWebSearchTools(tools any) (any, error) {
 		if toolMap, ok := tool.(map[string]any); ok {
 			toolType, hasType := toolMap["type"].(string)
 			
-			// Check if this is a WebSearch tool that needs transformation
-			if hasType && (toolType == "web_search_20250305" || toolType == "WebSearch" || toolType == "websearch") {
+			// Check if this is a WebSearch or WebFetch tool that needs transformation
+			if hasType && (toolType == "web_search_20250305" || toolType == "WebSearch" || toolType == "websearch" || 
+						   toolType == "web_fetch_20250305" || toolType == "WebFetch" || toolType == "webfetch") {
 				// Add bash tool for web requests (name must be "bash" for bash_20250124 type)
 				bashTool := map[string]any{
 					"type": "bash_20250124",
@@ -307,11 +308,20 @@ func transformWebSearchTools(tools any) (any, error) {
 				}
 				transformedTools = append(transformedTools, bashTool)
 				
-				// Add custom tool to provide web search interface
-				customTool := map[string]any{
+				// Enhanced web search tool with 50MB limit and content filtering
+				webSearchTool := map[string]any{
 					"type": "custom",
 					"name": "web_search",
-					"description": "Search the web for information. Use the bash tool to execute curl commands for web searching. Example: curl -s 'https://www.google.com/search?q=your+query' or curl -s 'https://duckduckgo.com/?q=your+query&format=json'",
+					"description": "Search the web with 50MB limit and content-type filtering. Use bash tool:\n" +
+						"SEARCH APIS (prefer these for efficiency):\n" +
+						"1. DuckDuckGo API: curl -s --max-time 15 'https://api.duckduckgo.com/?q=query&format=json&no_html=1'\n" +
+						"2. Google Custom Search (if available): use API endpoints\n" +
+						"HTML SEARCH (as fallback):\n" +
+						"3. Google: curl -s --max-time 20 'https://www.google.com/search?q=query' | head -c 10485760\n" +
+						"4. Bing: curl -s --max-time 20 'https://www.bing.com/search?q=query' | head -c 10485760\n" +
+						"CONTENT FILTERING: Only process text/html, application/json responses\n" +
+						"SIZE MANAGEMENT: Limit output to first 10MB for search results processing\n" +
+						"PARSING: Extract relevant results, ignore ads and navigation elements",
 					"input_schema": map[string]any{
 						"type": "object",
 						"properties": map[string]any{
@@ -322,13 +332,82 @@ func transformWebSearchTools(tools any) (any, error) {
 							"max_results": map[string]any{
 								"type": "integer",
 								"description": "Maximum number of results to return",
-								"default": 5,
+								"default": 10,
+								"maximum": 50,
+							},
+							"source": map[string]any{
+								"type": "string",
+								"description": "Search source preference",
+								"enum": []string{"auto", "duckduckgo", "google", "bing"},
+								"default": "auto",
 							},
 						},
 						"required": []string{"query"},
 					},
 				}
-				transformedTools = append(transformedTools, customTool)
+				transformedTools = append(transformedTools, webSearchTool)
+				
+				// New web fetch tool for content retrieval with chunking support
+				webFetchTool := map[string]any{
+					"type": "custom",
+					"name": "web_fetch",
+					"description": "Fetch web content (text/images) with chunking support, max 50MB. Use bash tool:\n" +
+						"STEP 1 - Check headers: curl -s -I --max-time 10 'URL'\n" +
+						"STEP 2 - Verify content-type is allowed:\n" +
+						"  TEXT: text/html, text/plain, application/json, application/xml, text/css, text/javascript\n" +
+						"  IMAGES: image/jpeg, image/png, image/gif, image/webp, image/svg+xml\n" +
+						"  DOCS: application/pdf, text/markdown, application/rss+xml\n" +
+						"STEP 3 - Check content-length (must be ≤ 52428800 bytes = 50MB)\n" +
+						"STEP 4 - Download strategy:\n" +
+						"  SMALL (<5MB): curl -s --max-time 30 -L 'URL'\n" +
+						"  LARGE (5-50MB): Use chunked download:\n" +
+						"    - curl -s --range 0-1048575 'URL'      # First 1MB chunk\n" +
+						"    - curl -s --range 1048576-2097151 'URL' # Next 1MB chunk\n" +
+						"    - Continue until complete or 50MB limit\n" +
+						"  STREAMING: curl -s 'URL' | head -c 52428800  # Limit to 50MB\n" +
+						"REJECT: Block video/*, audio/*, application/octet-stream, executable files\n" +
+						"ERROR HANDLING: Check HTTP status (200/206), validate content-type header",
+					"input_schema": map[string]any{
+						"type": "object",
+						"properties": map[string]any{
+							"url": map[string]any{
+								"type": "string",
+								"description": "URL to fetch content from",
+							},
+							"content_type_filter": map[string]any{
+								"type": "array",
+								"description": "Allowed content types (default: text and images)",
+								"items": map[string]any{"type": "string"},
+								"default": []string{
+									"text/html", "text/plain", "application/json", "application/xml",
+									"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml",
+									"text/css", "text/javascript", "application/pdf", "text/markdown",
+								},
+							},
+							"chunk_size": map[string]any{
+								"type": "integer",
+								"description": "Size of each chunk in bytes (default: 1MB)",
+								"default": 1048576,
+								"minimum": 65536,
+								"maximum": 5242880,
+							},
+							"max_size": map[string]any{
+								"type": "integer",
+								"description": "Maximum total size in bytes (default: 50MB)",
+								"default": 52428800,
+								"maximum": 52428800,
+							},
+							"timeout": map[string]any{
+								"type": "integer",
+								"description": "Timeout per request in seconds (default: 30)",
+								"default": 30,
+								"maximum": 60,
+							},
+						},
+						"required": []string{"url"},
+					},
+				}
+				transformedTools = append(transformedTools, webFetchTool)
 			} else {
 				// Keep other tools unchanged
 				transformedTools = append(transformedTools, tool)
