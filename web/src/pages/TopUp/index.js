@@ -364,12 +364,13 @@ const TopUp = () => {
       if (payMethods && payMethods.length > 0) {
         console.log('[DEBUG] 原始支付方式:', payMethods);
         
-        // 直接过滤掉微信支付，保留支付宝
+        // 过滤掉微信支付和旧的Stripe配置，保留支付宝
         payMethods = payMethods.filter((method) => {
           const isValid = method.name && method.type;
           const isNotWechat = method.type !== 'wx' && method.type !== 'wxpay';
-          console.log('[DEBUG] 检查支付方式:', method.name, method.type, 'isValid:', isValid, 'isNotWechat:', isNotWechat);
-          return isValid && isNotWechat;
+          const isNotStripe = method.type !== 'stripe';
+          console.log('[DEBUG] 检查支付方式:', method.name, method.type, 'isValid:', isValid, 'isNotWechat:', isNotWechat, 'isNotStripe:', isNotStripe);
+          return isValid && isNotWechat && isNotStripe;
         });
         console.log('[DEBUG] 过滤后的支付方式:', payMethods);
         // 如果没有color，则设置默认颜色
@@ -485,9 +486,6 @@ const TopUp = () => {
     setTopUpCount(preset.value);
     setSelectedPreset(preset.value);
     setAmount(preset.value * priceRatio);
-
-    setStripeTopUpCount(preset.value);
-    setStripeAmount(preset.value);
   };
 
   // 格式化大数字显示
