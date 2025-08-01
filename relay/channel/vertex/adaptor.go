@@ -15,6 +15,7 @@ import (
 	"one-api/relay/constant"
 	"one-api/setting/model_setting"
 	"one-api/types"
+	"reflect"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -32,6 +33,7 @@ var claudeModelMap = map[string]string{
 	"claude-3-haiku-20240307":    "claude-3-haiku@20240307",
 	"claude-3-5-sonnet-20240620": "claude-3-5-sonnet@20240620",
 	"claude-3-5-sonnet-20241022": "claude-3-5-sonnet-v2@20241022",
+	"claude-3-5-haiku-20241022":  "claude-3-5-haiku@20241022",
 	"claude-3-7-sonnet-20250219": "claude-3-7-sonnet@20250219",
 	"claude-sonnet-4-20250514":   "claude-sonnet-4@20250514",
 	"claude-opus-4-20250514":     "claude-opus-4@20250514",
@@ -51,13 +53,13 @@ func (a *Adaptor) ConvertClaudeRequest(c *gin.Context, info *relaycommon.RelayIn
 		c.Set("request_model", request.Model)
 	}
 	
-	// Transform WebSearch tools to supported tools for Vertex AI
+	// Normalize tools to ensure compatibility with Vertex AI
 	if request.Tools != nil {
-		transformedTools, err := transformWebSearchTools(request.Tools)
+		normalizedTools, err := normalizeToolsForVertexAI(request.Tools)
 		if err != nil {
-			return nil, fmt.Errorf("failed to transform tools: %w", err)
+			return nil, fmt.Errorf("failed to normalize tools: %w", err)
 		}
-		request.Tools = transformedTools
+		request.Tools = normalizedTools
 	}
 	
 	vertexClaudeReq := copyRequest(request, anthropicVersion)
@@ -185,13 +187,15 @@ func (a *Adaptor) ConvertOpenAIRequest(c *gin.Context, info *relaycommon.RelayIn
 			return nil, err
 		}
 		
-		// Transform WebSearch tools to supported tools for Vertex AI
+		// Normalize tools to ensure compatibility with Vertex AI
 		if claudeReq.Tools != nil {
-			transformedTools, err := transformWebSearchTools(claudeReq.Tools)
+			fmt.Printf("[DEBUG] ConvertOpenAIRequest - Before normalization: %+v\n", claudeReq.Tools)
+			normalizedTools, err := normalizeToolsForVertexAI(claudeReq.Tools)
 			if err != nil {
-				return nil, fmt.Errorf("failed to transform tools: %w", err)
+				return nil, fmt.Errorf("failed to normalize tools: %w", err)
 			}
-			claudeReq.Tools = transformedTools
+			claudeReq.Tools = normalizedTools
+			fmt.Printf("[DEBUG] ConvertOpenAIRequest - After normalization: %+v\n", claudeReq.Tools)
 		}
 		
 		vertexClaudeReq := copyRequest(claudeReq, anthropicVersion)
@@ -281,8 +285,8 @@ func (a *Adaptor) GetChannelName() string {
 	return ChannelName
 }
 
-// transformWebSearchTools converts WebSearch tools to supported Vertex AI tools
-func transformWebSearchTools(tools any) (any, error) {
+// normalizeToolsForVertexAI converts Anthropic-specific tools to function tools compatible with Vertex AI
+func normalizeToolsForVertexAI(tools any) (any, error) {
 	if tools == nil {
 		return nil, nil
 	}
@@ -292,131 +296,132 @@ func transformWebSearchTools(tools any) (any, error) {
 		return tools, nil
 	}
 
-	transformedTools := make([]any, 0, len(toolsList))
+	normalizedTools := make([]any, 0, len(toolsList))
+	hasWebTools := false
+	hasBashTool := false
 	
-	for _, tool := range toolsList {
+	fmt.Printf("[DEBUG] normalizeToolsForVertexAI: Processing %d tools\n", len(toolsList))
+	
+	for i, tool := range toolsList {
+		fmt.Printf("[DEBUG] Tool %d: type=%s\n", i, reflect.TypeOf(tool))
+		
+		// Handle map-based tools (e.g., from /v1/messages direct requests)
 		if toolMap, ok := tool.(map[string]any); ok {
 			toolType, hasType := toolMap["type"].(string)
+			toolName, hasName := toolMap["name"].(string)
 			
-			// Check if this is a WebSearch or WebFetch tool that needs transformation
-			if hasType && (toolType == "web_search_20250305" || toolType == "WebSearch" || toolType == "websearch" || 
-						   toolType == "web_fetch_20250305" || toolType == "WebFetch" || toolType == "webfetch") {
-				// Add bash tool for web requests (name must be "bash" for bash_20250124 type)
-				bashTool := map[string]any{
-					"type": "bash_20250124",
-					"name": "bash",
-				}
-				transformedTools = append(transformedTools, bashTool)
-				
-				// Enhanced web search tool with 50MB limit and content filtering
-				webSearchTool := map[string]any{
-					"type": "custom",
-					"name": "web_search",
-					"description": "Search the web with 50MB limit and content-type filtering. Use bash tool:\n" +
-						"SEARCH APIS (prefer these for efficiency):\n" +
-						"1. DuckDuckGo API: curl -s --max-time 15 'https://api.duckduckgo.com/?q=query&format=json&no_html=1'\n" +
-						"2. Google Custom Search (if available): use API endpoints\n" +
-						"HTML SEARCH (as fallback):\n" +
-						"3. Google: curl -s --max-time 20 'https://www.google.com/search?q=query' | head -c 10485760\n" +
-						"4. Bing: curl -s --max-time 20 'https://www.bing.com/search?q=query' | head -c 10485760\n" +
-						"CONTENT FILTERING: Only process text/html, application/json responses\n" +
-						"SIZE MANAGEMENT: Limit output to first 10MB for search results processing\n" +
-						"PARSING: Extract relevant results, ignore ads and navigation elements",
-					"input_schema": map[string]any{
-						"type": "object",
-						"properties": map[string]any{
-							"query": map[string]any{
-								"type": "string",
-								"description": "Search query to find information about",
-							},
-							"max_results": map[string]any{
-								"type": "integer",
-								"description": "Maximum number of results to return",
-								"default": 10,
-								"maximum": 50,
-							},
-							"source": map[string]any{
-								"type": "string",
-								"description": "Search source preference",
-								"enum": []string{"auto", "duckduckgo", "google", "bing"},
-								"default": "auto",
-							},
-						},
-						"required": []string{"query"},
-					},
-				}
-				transformedTools = append(transformedTools, webSearchTool)
-				
-				// New web fetch tool for content retrieval with chunking support
-				webFetchTool := map[string]any{
-					"type": "custom",
-					"name": "web_fetch",
-					"description": "Fetch web content (text/images) with chunking support, max 50MB. Use bash tool:\n" +
-						"STEP 1 - Check headers: curl -s -I --max-time 10 'URL'\n" +
-						"STEP 2 - Verify content-type is allowed:\n" +
-						"  TEXT: text/html, text/plain, application/json, application/xml, text/css, text/javascript\n" +
-						"  IMAGES: image/jpeg, image/png, image/gif, image/webp, image/svg+xml\n" +
-						"  DOCS: application/pdf, text/markdown, application/rss+xml\n" +
-						"STEP 3 - Check content-length (must be ≤ 52428800 bytes = 50MB)\n" +
-						"STEP 4 - Download strategy:\n" +
-						"  SMALL (<5MB): curl -s --max-time 30 -L 'URL'\n" +
-						"  LARGE (5-50MB): Use chunked download:\n" +
-						"    - curl -s --range 0-1048575 'URL'      # First 1MB chunk\n" +
-						"    - curl -s --range 1048576-2097151 'URL' # Next 1MB chunk\n" +
-						"    - Continue until complete or 50MB limit\n" +
-						"  STREAMING: curl -s 'URL' | head -c 52428800  # Limit to 50MB\n" +
-						"REJECT: Block video/*, audio/*, application/octet-stream, executable files\n" +
-						"ERROR HANDLING: Check HTTP status (200/206), validate content-type header",
-					"input_schema": map[string]any{
-						"type": "object",
-						"properties": map[string]any{
-							"url": map[string]any{
-								"type": "string",
-								"description": "URL to fetch content from",
-							},
-							"content_type_filter": map[string]any{
-								"type": "array",
-								"description": "Allowed content types (default: text and images)",
-								"items": map[string]any{"type": "string"},
-								"default": []string{
-									"text/html", "text/plain", "application/json", "application/xml",
-									"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml",
-									"text/css", "text/javascript", "application/pdf", "text/markdown",
-								},
-							},
-							"chunk_size": map[string]any{
-								"type": "integer",
-								"description": "Size of each chunk in bytes (default: 1MB)",
-								"default": 1048576,
-								"minimum": 65536,
-								"maximum": 5242880,
-							},
-							"max_size": map[string]any{
-								"type": "integer",
-								"description": "Maximum total size in bytes (default: 50MB)",
-								"default": 52428800,
-								"maximum": 52428800,
-							},
-							"timeout": map[string]any{
-								"type": "integer",
-								"description": "Timeout per request in seconds (default: 30)",
-								"default": 30,
-								"maximum": 60,
-							},
-						},
-						"required": []string{"url"},
-					},
-				}
-				transformedTools = append(transformedTools, webFetchTool)
-			} else {
-				// Keep other tools unchanged
-				transformedTools = append(transformedTools, tool)
+			fmt.Printf("[DEBUG] Tool %d (map): type=%s, name=%s, hasType=%v, hasName=%v\n", i, toolType, toolName, hasType, hasName)
+			
+			// Check for existing bash tool
+			if hasType && toolType == "bash_20250124" {
+				fmt.Printf("[DEBUG] Found existing bash tool\n")
+				hasBashTool = true
+				normalizedTools = append(normalizedTools, tool)
+				continue
 			}
-		} else {
-			// Keep non-map tools unchanged
-			transformedTools = append(transformedTools, tool)
+			
+			// Skip unsupported web_search_20250305 tool - will add bash instead
+			if hasType && toolType == "web_search_20250305" {
+				fmt.Printf("[DEBUG] Skipping unsupported web_search_20250305, will add bash tool\n")
+				hasWebTools = true
+				continue // Skip this tool
+			}
+			
+			// Skip unsupported web_fetch_20250305 tool - will add bash instead
+			if hasType && toolType == "web_fetch_20250305" {
+				fmt.Printf("[DEBUG] Skipping unsupported web_fetch_20250305, will add bash tool\n")
+				hasWebTools = true
+				continue // Skip this tool
+			}
+			
+			// Handle function tools (OpenAI format) - pass through as-is
+			if hasType && toolType == "function" {
+				fmt.Printf("[DEBUG] Keeping function tool: %s\n", getToolFunctionName(toolMap))
+				
+				// Check if this is a web-related function
+				functionName := getToolFunctionName(toolMap)
+				if functionName == "web_search" || functionName == "web_fetch" {
+					hasWebTools = true
+				}
+				
+				normalizedTools = append(normalizedTools, tool)
+				continue
+			}
+			
+			// Handle Claude Code native tools (without type field)
+			if !hasType && hasName {
+				if toolName == "WebFetch" || toolName == "WebSearch" {
+					fmt.Printf("[DEBUG] Skipping Claude Code web tool: %s, will add bash tool\n", toolName)
+					hasWebTools = true
+					continue // Skip web tools, use bash instead
+				}
+			}
+			
+			// Handle any other tool formats - pass through with logging
+			fmt.Printf("[DEBUG] Passing through unknown tool format: type=%s, name=%s\n", toolType, toolName)
+			normalizedTools = append(normalizedTools, tool)
+			continue
 		}
+		
+		// Handle pointer to dto.Tool (from RequestOpenAI2ClaudeMessage)
+		if toolPtr, ok := tool.(*dto.Tool); ok {
+			fmt.Printf("[DEBUG] Tool %d (dto.Tool pointer): name=%s\n", i, toolPtr.Name)
+			
+			// Check if this is a web-related tool
+			if toolPtr.Name == "web_search" || toolPtr.Name == "web_fetch" {
+				fmt.Printf("[DEBUG] Skipping dto.Tool %s, will add bash tool\n", toolPtr.Name)
+				hasWebTools = true
+				continue // Skip web tools, use bash instead
+			}
+			
+			// For non-web tools, convert to function tool format
+			convertedTool := map[string]any{
+				"type": "function",
+				"function": map[string]any{
+					"name":        toolPtr.Name,
+					"description": toolPtr.Description,
+					"parameters":  toolPtr.InputSchema,
+				},
+			}
+			normalizedTools = append(normalizedTools, convertedTool)
+			continue
+		}
+		
+		// Handle pointer to dto.ClaudeWebSearchTool (from RequestOpenAI2ClaudeMessage WebSearchOptions)
+		if webSearchTool, ok := tool.(*dto.ClaudeWebSearchTool); ok {
+			fmt.Printf("[DEBUG] Tool %d (ClaudeWebSearchTool pointer): type=%s, name=%s\n", i, webSearchTool.Type, webSearchTool.Name)
+			
+			// Skip web search tool, will add bash instead
+			fmt.Printf("[DEBUG] Skipping ClaudeWebSearchTool, will add bash tool\n")
+			hasWebTools = true
+			continue // Skip this tool
+		}
+		
+		// Keep any other tool types unchanged
+		fmt.Printf("[DEBUG] Keeping unknown tool type: %s\n", reflect.TypeOf(tool))
+		normalizedTools = append(normalizedTools, tool)
 	}
 	
-	return transformedTools, nil
+	// Add bash tool if we have web tools but no bash tool
+	if hasWebTools && !hasBashTool {
+		fmt.Printf("[DEBUG] Adding bash tool for web function support\n")
+		bashTool := map[string]any{
+			"type": "bash_20250124",
+			"name": "bash",
+		}
+		normalizedTools = append(normalizedTools, bashTool)
+	}
+	
+	fmt.Printf("[DEBUG] normalizeToolsForVertexAI: Original: %d, Final: %d tools\n", len(toolsList), len(normalizedTools))
+	return normalizedTools, nil
+}
+
+// Helper function to extract function name from function tool
+func getToolFunctionName(toolMap map[string]any) string {
+	if function, ok := toolMap["function"].(map[string]any); ok {
+		if name, ok := function["name"].(string); ok {
+			return name
+		}
+	}
+	return ""
 }
