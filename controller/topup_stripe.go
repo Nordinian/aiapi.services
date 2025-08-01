@@ -73,7 +73,7 @@ func (*StripeAdaptor) RequestPay(c *gin.Context, req *StripePayRequest) {
 	reference := fmt.Sprintf("new-api-ref-%d-%d-%s", user.Id, time.Now().UnixMilli(), randstr.String(4))
 	referenceId := "ref_" + common.Sha1([]byte(reference))
 
-	payLink, err := genStripeLink(referenceId, user.StripeCustomer, user.Email, req.Amount)
+	payLink, err := genStripeLink(referenceId, user.StripeCustomer, user.Email, chargedMoney)
 	if err != nil {
 		log.Println("获取Stripe Checkout支付链接失败", err)
 		c.JSON(200, gin.H{"message": "error", "data": "拉起支付失败"})
@@ -206,7 +206,7 @@ func sessionExpired(event stripe.Event) {
 	log.Println("充值订单已过期", referenceId)
 }
 
-func genStripeLink(referenceId string, customerId string, email string, amount int64) (string, error) {
+func genStripeLink(referenceId string, customerId string, email string, chargedMoney float64) (string, error) {
 	if !strings.HasPrefix(setting.StripeApiSecret, "sk_") && !strings.HasPrefix(setting.StripeApiSecret, "rk_") {
 		return "", fmt.Errorf("无效的Stripe API密钥")
 	}
@@ -219,8 +219,14 @@ func genStripeLink(referenceId string, customerId string, email string, amount i
 		CancelURL:         stripe.String(setting.ServerAddress + "/topup"),
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
-				Price:    stripe.String(setting.StripePriceId),
-				Quantity: stripe.Int64(amount),
+				PriceData: &stripe.CheckoutSessionLineItemPriceDataParams{
+					Currency: stripe.String("usd"),
+					ProductData: &stripe.CheckoutSessionLineItemPriceDataProductDataParams{
+						Name: stripe.String("API Credits"),
+					},
+					UnitAmount: stripe.Int64(int64(chargedMoney * 100)), // Convert to cents
+				},
+				Quantity: stripe.Int64(1),
 			},
 		},
 		Mode: stripe.String(string(stripe.CheckoutSessionModePayment)),

@@ -145,7 +145,7 @@ func RequestEpay(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "error", "data": "创建订单失败"})
 		return
 	}
-	c.JSON(200, gin.H{"message": "success", "data": params, "url": uri})
+	c.JSON(200, gin.H{"message": "success", "data": gin.H{"params": params, "url": uri}})
 }
 
 // tradeNo lock
