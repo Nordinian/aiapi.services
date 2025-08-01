@@ -3,10 +3,12 @@ FROM oven/bun:latest AS builder
 WORKDIR /build
 COPY web/package.json .
 COPY web/bun.lock .
-RUN bun install
+RUN bun install --frozen-lockfile
 COPY ./web .
 COPY ./VERSION .
-RUN export DISABLE_ESLINT_PLUGIN=true && export VITE_REACT_APP_VERSION=$(cat VERSION) && bun run build
+ENV DISABLE_ESLINT_PLUGIN=true
+ENV VITE_REACT_APP_VERSION=1.0.0
+RUN bun run build
 
 FROM golang:alpine AS builder2
 
