@@ -108,16 +108,16 @@ var defaultModelRatio = map[string]float64{
 	"claude-instant-1":                          0.4,   // $0.8 / 1M tokens
 	"claude-2.0":                                4,     // $8 / 1M tokens
 	"claude-2.1":                                4,     // $8 / 1M tokens
-	"claude-3-haiku-20240307":                   0.125, // $0.25 / 1M tokens
-	"claude-3-5-haiku-20241022":                 0.5,   // $1 / 1M tokens
-	"claude-3-sonnet-20240229":                  1.5,   // $3 / 1M tokens
-	"claude-3-5-sonnet-20240620":                1.5,
-	"claude-3-5-sonnet-20241022":                1.5,
-	"claude-3-7-sonnet-20250219":                1.5,
-	"claude-3-7-sonnet-20250219-thinking":       1.5,
-	"claude-sonnet-4-20250514":                  1.5,
-	"claude-3-opus-20240229":                    7.5, // $15 / 1M tokens
-	"claude-opus-4-20250514":                    7.5,
+	"claude-3-haiku-20240307":                   0.125, // $0.25 / 1M tokens (Vertex AI 官方定价)
+	"claude-3-5-haiku-20241022":                 0.5,   // $1 / 1M tokens (Vertex AI 官方定价)
+	"claude-3-sonnet-20240229":                  1.5,   // $3 / 1M tokens (Vertex AI 官方定价)
+	"claude-3-5-sonnet-20240620":                1.5,   // $3 / 1M tokens (Vertex AI 官方定价)
+	"claude-3-5-sonnet-20241022":                1.5,   // $3 / 1M tokens (Vertex AI 官方定价)
+	"claude-3-7-sonnet-20250219":                1.5,   // $3 / 1M tokens (Vertex AI 官方定价)
+	"claude-3-7-sonnet-20250219-thinking":       1.5,   // $3 / 1M tokens (Thinking 模式)
+	"claude-sonnet-4-20250514":                  1.5,   // $3 / 1M tokens (Claude 4 Sonnet)
+	"claude-3-opus-20240229":                    7.5,   // $15 / 1M tokens (Vertex AI 官方定价)
+	"claude-opus-4-20250514":                    7.5,   // $15 / 1M tokens (Claude 4 Opus)
 	"ERNIE-4.0-8K":                              0.120 * RMB,
 	"ERNIE-3.5-8K":                              0.012 * RMB,
 	"ERNIE-3.5-8K-0205":                         0.024 * RMB,
@@ -135,12 +135,12 @@ var defaultModelRatio = map[string]float64{
 	"bge-large-en":                              0.002 * RMB,
 	"tao-8k":                                    0.002 * RMB,
 	"PaLM-2":                                    1,
-	"gemini-1.5-pro-latest":                     1.25, // $3.5 / 1M tokens
-	"gemini-1.5-flash-latest":                   0.075,
+	"gemini-1.5-pro-latest":                     1.75, // $3.5 / 1M tokens (Vertex AI 官方定价)
+	"gemini-1.5-flash-latest":                   0.1875, // $0.375 / 1M tokens (Vertex AI 官方定价)
 	"gemini-2.0-flash":                          0.05,
 	"gemini-2.5-pro-exp-03-25":                  0.625,
 	"gemini-2.5-pro-preview-03-25":              0.625,
-	"gemini-2.5-pro":                            0.625,
+	"gemini-2.5-pro":                            0.625, // 基础价格，实际根据输入token数量分层：≤200k:0.625, >200k:1.25
 	"gemini-2.5-flash-preview-04-17":            0.075,
 	"gemini-2.5-flash-preview-04-17-thinking":   0.075,
 	"gemini-2.5-flash-preview-04-17-nothinking": 0.075,
@@ -151,7 +151,7 @@ var defaultModelRatio = map[string]float64{
 	"gemini-2.5-pro-thinking-*":                 0.625, // 用于为后续所有2.5 pro thinking budget 模型设置默认倍率
 	"gemini-2.5-flash-lite-preview-06-17":       0.05,
 	"gemini-2.5-flash":                          0.15,
-	"text-embedding-004":                        0.001,
+	"text-embedding-004":                        0.00005, // $0.00005 / 1K tokens (Vertex AI 官方定价)
 	"chatglm_turbo":                             0.3572,     // ￥0.005 / 1k tokens
 	"chatglm_pro":                               0.7143,     // ￥0.01 / 1k tokens
 	"chatglm_std":                               0.3572,     // ￥0.005 / 1k tokens
@@ -209,6 +209,11 @@ var defaultModelRatio = map[string]float64{
 	"deepseek-chat":          0.27 / 2,
 	"deepseek-coder":         0.27 / 2,
 	"deepseek-reasoner":      0.55 / 2, // 0.55 / 1k tokens
+	// Vertex AI DeepSeek 系列 (按token计费)
+	"deepseek-ai/deepseek-r1-0528-maas":           0.55 / 2, // DeepSeek R1 推理模型
+	
+	// Vertex AI Llama 系列 (MaaS模型, 按token计费)
+	"meta/llama3-405b-instruct-maas":              1.5, // Llama 3 405B 指令调优版本
 	// Perplexity online 模型对搜索额外收费，有需要应自行调整，此处不计入搜索费用
 	"llama-3-sonar-small-32k-chat":   0.2 / 1000 * USD,
 	"llama-3-sonar-small-32k-online": 0.2 / 1000 * USD,
@@ -229,7 +234,6 @@ var defaultModelPrice = map[string]float64{
 	"suno_music":              0.1,
 	"suno_lyrics":             0.01,
 	"dall-e-3":                0.04,
-	"imagen-3.0-generate-002": 0.03,
 	"gpt-4-gizmo-*":           0.1,
 	"mj_video":                0.8,
 	"mj_imagine":              0.1,
@@ -249,6 +253,41 @@ var defaultModelPrice = map[string]float64{
 	"mj_upscale":              0.05,
 	"swap_face":               0.05,
 	"mj_upload":               0.05,
+	
+	// Vertex AI Imagen 系列 (按图片计费)
+	"imagen-4.0-generate-preview-06-06":      0.08,  // Imagen 4 标准版
+	"imagen-4.0-fast-generate-preview-06-06": 0.06,  // Imagen 4 快速版
+	"imagen-4.0-ultra-generate-preview-06-06": 0.12, // Imagen 4 超高质量版
+	"imagen-3.0-generate-002":                0.04,  // Imagen 3 最新版
+	"imagen-3.0-generate-001":                0.04,  // Imagen 3 标准版
+	"imagen-3.0-fast-generate-001":           0.02,  // Imagen 3 快速版
+	"imagen-3.0-capability-001":              0.04,  // Imagen 3 功能版
+	
+	// Vertex AI Veo 系列 (按视频计费)
+	"veo-2-generate-001":      8.0,   // Veo 2
+	"veo-3-generate-001":      12.0,  // Veo 3
+	"veo-3-fast-generate-001": 6.0,   // Veo 3 快速版
+	
+	// Vertex AI Lyria 系列 (按音频时长计费)
+	"lyria-music-generate-001":    0.02,  // 音乐生成，每秒
+	"lyria-audio-generate-001":    0.015, // 音频生成，每秒
+	"lyria-voice-clone-001":       0.025, // 语音克隆，每秒
+	"lyria-sound-effects-001":     0.01,  // 音效生成，每秒
+	
+	// Vertex AI Text-to-Speech 系列 (按字符计费)
+	"text-to-speech-001":           0.000016,  // 标准TTS，每字符
+	"text-to-speech-multilingual":  0.000016,  // 多语言TTS，每字符
+	"text-to-speech-neural":        0.000032,  // 神经网络TTS，每字符
+	"text-to-speech-standard":      0.000008,  // 标准质量TTS，每字符
+	
+	// Vertex AI Embedding 系列 (按1K tokens计费)
+	"text-multilingual-embedding-002":  0.00005,  // 多语言嵌入
+	"textembedding-gecko":              0.00005,  // Gecko嵌入
+	"textembedding-gecko-multilingual": 0.00005,  // Gecko多语言
+	"text-embedding-preview-0815":      0.0001,   // 预览版本
+	
+	// Vertex AI Llama 系列 (MaaS模型，按次计费)
+	"meta/llama3-405b-instruct-maas":   3.0,  // Llama 3 405B 指令调优版本
 }
 
 var (
@@ -502,7 +541,7 @@ func getHardcodedCompletionModelRatio(name string) (float64, bool) {
 			return 4, true
 		} else if strings.HasPrefix(name, "gemini-2.0") {
 			return 4, true
-		} else if strings.HasPrefix(name, "gemini-2.5-pro") { // 移除preview来增加兼容性，这里假设正式版的倍率和preview一致
+		} else if strings.HasPrefix(name, "gemini-2.5-pro") { // 基础倍率，实际根据输入token数量动态计算：≤200k:8倍, >200k:6倍
 			return 8, false
 		} else if strings.HasPrefix(name, "gemini-2.5-flash") { // 处理不同的flash模型倍率
 			if strings.HasPrefix(name, "gemini-2.5-flash-preview") {

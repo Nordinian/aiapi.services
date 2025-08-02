@@ -81,6 +81,20 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 		var success bool
 		var matchName string
 		modelRatio, success, matchName = ratio_setting.GetModelRatio(info.OriginModelName)
+		
+		// 特殊处理 gemini-2.5-pro 的分层定价
+		if info.OriginModelName == "gemini-2.5-pro" {
+			if promptTokens <= 200000 {
+				// ≤200k tokens: $1.25/1M tokens input, $10/1M tokens output
+				modelRatio = 0.625  // $1.25 / 1M tokens 转换为系统倍率
+			} else {
+				// >200k tokens: $2.5/1M tokens input, $15/1M tokens output  
+				modelRatio = 1.25   // $2.5 / 1M tokens 转换为系统倍率
+			}
+			success = true
+			matchName = info.OriginModelName
+		}
+		
 		if !success {
 			acceptUnsetRatio := false
 			if info.UserSetting.AcceptUnsetRatioModel {
@@ -91,6 +105,18 @@ func ModelPriceHelper(c *gin.Context, info *relaycommon.RelayInfo, promptTokens 
 			}
 		}
 		completionRatio = ratio_setting.GetCompletionRatio(info.OriginModelName)
+		
+		// 特殊处理 gemini-2.5-pro 的输出token倍率
+		if info.OriginModelName == "gemini-2.5-pro" {
+			if promptTokens <= 200000 {
+				// ≤200k tokens: $10/1M tokens output / $1.25/1M tokens input = 8倍
+				completionRatio = 8.0  
+			} else {
+				// >200k tokens: $15/1M tokens output / $2.5/1M tokens input = 6倍  
+				completionRatio = 6.0
+			}
+		}
+		
 		cacheRatio, _ = ratio_setting.GetCacheRatio(info.OriginModelName)
 		cacheCreationRatio, _ = ratio_setting.GetCreateCacheRatio(info.OriginModelName)
 		imageRatio, _ = ratio_setting.GetImageRatio(info.OriginModelName)
