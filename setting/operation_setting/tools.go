@@ -51,13 +51,14 @@ func GetFileSearchPricePerThousand() float64 {
 }
 
 func GetGeminiInputAudioPricePerMillionTokens(modelName string) float64 {
-	if strings.HasPrefix(modelName, "gemini-2.5-flash-preview-native-audio") {
-		return Gemini25FlashNativeAudioInputAudioPrice
-	} else if strings.HasPrefix(modelName, "gemini-2.5-flash-preview-lite") {
-		return Gemini25FlashLitePreviewInputAudioPrice
-	} else if strings.HasPrefix(modelName, "gemini-2.5-flash-preview") {
-		return Gemini25FlashPreviewInputAudioPrice
-	} else if strings.HasPrefix(modelName, "gemini-2.5-flash") {
+	// if strings.HasPrefix(modelName, "gemini-2.5-flash-preview-native-audio") {
+	//	return Gemini25FlashNativeAudioInputAudioPrice
+	// } else if strings.HasPrefix(modelName, "gemini-2.5-flash-preview-lite") {
+	//	return Gemini25FlashLitePreviewInputAudioPrice
+	// } else if strings.HasPrefix(modelName, "gemini-2.5-flash-preview") {
+	//	return Gemini25FlashPreviewInputAudioPrice
+	// } else 
+	if strings.HasPrefix(modelName, "gemini-2.5-flash") {
 		return Gemini25FlashProductionInputAudioPrice
 	} else if strings.HasPrefix(modelName, "gemini-2.0-flash") {
 		return Gemini20FlashInputAudioPrice

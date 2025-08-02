@@ -40,6 +40,27 @@ var defaultCacheRatio = map[string]float64{
 	"claude-sonnet-4-20250514-thinking":   0.1,
 	"claude-opus-4-20250514":              0.1,
 	"claude-opus-4-20250514-thinking":     0.1,
+	
+	// Vertex AI Gemini 系列缓存支持 (87.5% 折扣)
+	"gemini-1.5-pro":                      0.125,  // $0.4375/1M vs $3.5/1M
+	"gemini-1.5-pro-latest":               0.125,
+	"gemini-1.5-flash":                    0.125,  // $0.046875/1M vs $0.375/1M
+	"gemini-1.5-flash-latest":             0.125,
+	"gemini-2.0-flash":                    0.125,
+	"gemini-2.0-flash-exp":                0.125,
+	"gemini-2.5-pro":                      0.125,  // 分层定价支持
+	// "gemini-2.5-pro-exp-03-25":            0.125, // 已弃用，实验版本
+	// "gemini-2.5-pro-preview-03-25":        0.125, // 已弃用，预览版本
+	"gemini-2.5-flash":                    0.125,
+	// "gemini-2.5-flash-preview-04-17":      0.125, // 已弃用，预览版本
+	// "gemini-2.5-flash-preview-05-20":      0.125, // 已弃用，预览版本
+	"gemini-2.5-flash-lite-preview-06-17": 0.125,
+	
+	// Vertex AI 嵌入模型缓存支持
+	"text-embedding-004":                  0.125,  // $0.00005/1K vs $0.0004/1K
+	"text-multilingual-embedding-002":     0.125,
+	"textembedding-gecko":                 0.125,
+	"textembedding-gecko-multilingual":    0.125,
 }
 
 var defaultCreateCacheRatio = map[string]float64{
@@ -55,6 +76,51 @@ var defaultCreateCacheRatio = map[string]float64{
 	"claude-sonnet-4-20250514-thinking":   1.25,
 	"claude-opus-4-20250514":              1.25,
 	"claude-opus-4-20250514-thinking":     1.25,
+	
+	// Vertex AI Gemini 系列缓存创建 (标准价格，无额外费用)
+	"gemini-1.5-pro":                      1.0,  // 缓存写入 = 标准价格
+	"gemini-1.5-pro-latest":               1.0,
+	"gemini-1.5-flash":                    1.0,
+	"gemini-1.5-flash-latest":             1.0,
+	"gemini-2.0-flash":                    1.0,
+	"gemini-2.0-flash-exp":                1.0,
+	"gemini-2.5-pro":                      1.0,  // 分层定价支持
+	// "gemini-2.5-pro-exp-03-25":            1.0, // 已弃用，实验版本
+	// "gemini-2.5-pro-preview-03-25":        1.0, // 已弃用，预览版本
+	"gemini-2.5-flash":                    1.0,
+	// "gemini-2.5-flash-preview-04-17":      1.0, // 已弃用，预览版本
+	// "gemini-2.5-flash-preview-05-20":      1.0, // 已弃用，预览版本
+	"gemini-2.5-flash-lite-preview-06-17": 1.0,
+	
+	// Vertex AI 嵌入模型缓存创建
+	"text-embedding-004":                  1.0,
+	"text-multilingual-embedding-002":     1.0,
+	"textembedding-gecko":                 1.0,
+	"textembedding-gecko-multilingual":    1.0,
+}
+
+// Vertex AI 缓存存储倍率 (按小时计费)
+var defaultCacheStorageRatio = map[string]float64{
+	// Vertex AI Gemini 系列缓存存储费用
+	"gemini-1.5-pro":                      0.5,    // $1/1M tokens/hour
+	"gemini-1.5-pro-latest":               0.5,
+	"gemini-1.5-flash":                    0.05,   // $0.1/1M tokens/hour
+	"gemini-1.5-flash-latest":             0.05,
+	"gemini-2.0-flash":                    0.05,
+	"gemini-2.0-flash-exp":                0.05,
+	"gemini-2.5-pro":                      0.25,   // $0.5/1M tokens/hour
+	// "gemini-2.5-pro-exp-03-25":            0.25, // 已弃用，实验版本
+	// "gemini-2.5-pro-preview-03-25":        0.25, // 已弃用，预览版本
+	"gemini-2.5-flash":                    0.05,
+	// "gemini-2.5-flash-preview-04-17":      0.05, // 已弃用，预览版本
+	// "gemini-2.5-flash-preview-05-20":      0.05, // 已弃用，预览版本
+	"gemini-2.5-flash-lite-preview-06-17": 0.025,  // $0.05/1M tokens/hour
+	
+	// Vertex AI 嵌入模型缓存存储
+	"text-embedding-004":                  0.025,  // $0.05/1M tokens/hour
+	"text-multilingual-embedding-002":     0.025,
+	"textembedding-gecko":                 0.025,
+	"textembedding-gecko-multilingual":    0.025,
 }
 
 //var defaultCreateCacheRatio = map[string]float64{}
@@ -119,4 +185,28 @@ func GetCacheRatioCopy() map[string]float64 {
 		copyMap[k] = v
 	}
 	return copyMap
+}
+
+// GetCacheStorageRatio 获取缓存存储倍率 (Vertex AI 按小时计费)
+func GetCacheStorageRatio(name string) (float64, bool) {
+	ratio, ok := defaultCacheStorageRatio[name]
+	if !ok {
+		return 0, false // 不支持缓存存储计费的模型返回 0
+	}
+	return ratio, true
+}
+
+// CalculateCacheStorageCost 计算缓存存储费用
+// modelName: 模型名称
+// cacheTokens: 缓存的token数量
+// storageHours: 存储小时数
+// returns: 存储费用 (以配额单位计算)
+func CalculateCacheStorageCost(modelName string, cacheTokens int, storageHours float64) float64 {
+	storageRatio, exists := GetCacheStorageRatio(modelName)
+	if !exists || storageHours <= 0 || cacheTokens <= 0 {
+		return 0
+	}
+	
+	// 存储费用 = (缓存tokens / 1M) × 存储倍率 × 存储小时数 × 配额单位
+	return float64(cacheTokens) * storageRatio * storageHours / 1000000 * 500
 }

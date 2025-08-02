@@ -134,22 +134,23 @@ var defaultModelRatio = map[string]float64{
 	"bge-large-zh":                              0.002 * RMB,
 	"bge-large-en":                              0.002 * RMB,
 	"tao-8k":                                    0.002 * RMB,
-	"PaLM-2":                                    1,
+	// "PaLM-2":                                    1, // 已弃用，由 Gemini 系列替代
+	// "gemini-1.0-pro":                            0.5, // 已弃用，由 gemini-1.5-pro 替代
 	"gemini-1.5-pro-latest":                     1.75, // $3.5 / 1M tokens (Vertex AI 官方定价)
 	"gemini-1.5-flash-latest":                   0.1875, // $0.375 / 1M tokens (Vertex AI 官方定价)
 	"gemini-2.0-flash":                          0.05,
-	"gemini-2.5-pro-exp-03-25":                  0.625,
-	"gemini-2.5-pro-preview-03-25":              0.625,
+	// "gemini-2.5-pro-exp-03-25":                  0.625, // 已弃用，实验版本，由正式版本替代
+	// "gemini-2.5-pro-preview-03-25":              0.625, // 已弃用，预览版本，由正式版本替代
 	"gemini-2.5-pro":                            0.625, // 基础价格，实际根据输入token数量分层：≤200k:0.625, >200k:1.25
-	"gemini-2.5-flash-preview-04-17":            0.075,
-	"gemini-2.5-flash-preview-04-17-thinking":   0.075,
-	"gemini-2.5-flash-preview-04-17-nothinking": 0.075,
-	"gemini-2.5-flash-preview-05-20":            0.075,
-	"gemini-2.5-flash-preview-05-20-thinking":   0.075,
-	"gemini-2.5-flash-preview-05-20-nothinking": 0.075,
+	// "gemini-2.5-flash-preview-04-17":            0.075, // 已弃用，预览版本，由正式版本替代
+	// "gemini-2.5-flash-preview-04-17-thinking":   0.075, // 已弃用，预览版本，由正式版本替代
+	// "gemini-2.5-flash-preview-04-17-nothinking": 0.075, // 已弃用，预览版本，由正式版本替代
+	// "gemini-2.5-flash-preview-05-20":            0.075, // 已弃用，预览版本，由正式版本替代
+	// "gemini-2.5-flash-preview-05-20-thinking":   0.075, // 已弃用，预览版本，由正式版本替代
+	// "gemini-2.5-flash-preview-05-20-nothinking": 0.075, // 已弃用，预览版本，由正式版本替代
 	"gemini-2.5-flash-thinking-*":               0.075, // 用于为后续所有2.5 flash thinking budget 模型设置默认倍率
 	"gemini-2.5-pro-thinking-*":                 0.625, // 用于为后续所有2.5 pro thinking budget 模型设置默认倍率
-	"gemini-2.5-flash-lite-preview-06-17":       0.05,
+	// "gemini-2.5-flash-lite-preview-06-17":       0.05,  // 已弃用，预览版本，由正式版本替代
 	"gemini-2.5-flash":                          0.15,
 	"text-embedding-004":                        0.00005, // $0.00005 / 1K tokens (Vertex AI 官方定价)
 	"chatglm_turbo":                             0.3572,     // ￥0.005 / 1k tokens
@@ -259,7 +260,7 @@ var defaultModelPrice = map[string]float64{
 	"imagen-4.0-fast-generate-preview-06-06": 0.06,  // Imagen 4 快速版
 	"imagen-4.0-ultra-generate-preview-06-06": 0.12, // Imagen 4 超高质量版
 	"imagen-3.0-generate-002":                0.04,  // Imagen 3 最新版
-	"imagen-3.0-generate-001":                0.04,  // Imagen 3 标准版
+	// "imagen-3.0-generate-001":                0.04,  // 已弃用，由 imagen-3.0-generate-002 替代
 	"imagen-3.0-fast-generate-001":           0.02,  // Imagen 3 快速版
 	"imagen-3.0-capability-001":              0.04,  // Imagen 3 功能版
 	

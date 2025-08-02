@@ -51,9 +51,10 @@ const (
 
 // clampThinkingBudget 根据模型名称将预算限制在允许的范围内
 func clampThinkingBudget(modelName string, budget int) int {
-	isNew25Pro := strings.HasPrefix(modelName, "gemini-2.5-pro") &&
-		!strings.HasPrefix(modelName, "gemini-2.5-pro-preview-05-06") &&
-		!strings.HasPrefix(modelName, "gemini-2.5-pro-preview-03-25")
+	isNew25Pro := strings.HasPrefix(modelName, "gemini-2.5-pro")
+		// 注意：preview 版本已弃用
+		// !strings.HasPrefix(modelName, "gemini-2.5-pro-preview-05-06") &&
+		// !strings.HasPrefix(modelName, "gemini-2.5-pro-preview-03-25")
 	is25FlashLite := strings.HasPrefix(modelName, "gemini-2.5-flash-lite")
 
 	if is25FlashLite {
@@ -84,9 +85,10 @@ func clampThinkingBudget(modelName string, budget int) int {
 func ThinkingAdaptor(geminiRequest *GeminiChatRequest, info *relaycommon.RelayInfo) {
 	if model_setting.GetGeminiSettings().ThinkingAdapterEnabled {
 		modelName := info.UpstreamModelName
-		isNew25Pro := strings.HasPrefix(modelName, "gemini-2.5-pro") &&
-			!strings.HasPrefix(modelName, "gemini-2.5-pro-preview-05-06") &&
-			!strings.HasPrefix(modelName, "gemini-2.5-pro-preview-03-25")
+		isNew25Pro := strings.HasPrefix(modelName, "gemini-2.5-pro")
+			// 注意：preview 版本已弃用
+			// !strings.HasPrefix(modelName, "gemini-2.5-pro-preview-05-06") &&
+			// !strings.HasPrefix(modelName, "gemini-2.5-pro-preview-03-25")
 
 		if strings.Contains(modelName, "-thinking-") {
 			parts := strings.SplitN(modelName, "-thinking-", 2)
@@ -100,9 +102,10 @@ func ThinkingAdaptor(geminiRequest *GeminiChatRequest, info *relaycommon.RelayIn
 				}
 			}
 		} else if strings.HasSuffix(modelName, "-thinking") {
+			// 弃用的模型列表（已不支持）
 			unsupportedModels := []string{
-				"gemini-2.5-pro-preview-05-06",
-				"gemini-2.5-pro-preview-03-25",
+				// "gemini-2.5-pro-preview-05-06", // 已弃用
+				// "gemini-2.5-pro-preview-03-25", // 已弃用
 			}
 			isUnsupported := false
 			for _, unsupportedModel := range unsupportedModels {

@@ -16,8 +16,8 @@ var ModelList = []string{
 	"gemini-2.0-pro-exp",
 	// thinking exp
 	"gemini-2.0-flash-thinking-exp",
-	"gemini-2.5-pro-exp-03-25",
-	"gemini-2.5-pro-preview-03-25",
+	// "gemini-2.5-pro-exp-03-25",     // 已弃用，实验版本，由正式版本替代
+	// "gemini-2.5-pro-preview-03-25", // 已弃用，预览版本，由正式版本替代
 	// imagen models
 	"imagen-3.0-generate-002",
 	// embedding models

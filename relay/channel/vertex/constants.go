@@ -24,7 +24,7 @@ var ModelList = []string{
 	
 	// Imagen 3 系列 (已验证可用)
 	"imagen-3.0-generate-002",
-	"imagen-3.0-generate-001",
+	// "imagen-3.0-generate-001", // 已弃用，由 imagen-3.0-generate-002 替代
 	"imagen-3.0-fast-generate-001",
 	"imagen-3.0-capability-001",
 	

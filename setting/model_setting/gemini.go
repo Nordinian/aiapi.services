@@ -20,8 +20,8 @@ var defaultGeminiSettings = GeminiSettings{
 		"HARM_CATEGORY_CIVIC_INTEGRITY": "BLOCK_NONE",
 	},
 	VersionSettings: map[string]string{
-		"default":        "v1beta",
-		"gemini-1.0-pro": "v1",
+		"default": "v1beta",
+		// "gemini-1.0-pro": "v1", // 已弃用，由 gemini-1.5-pro 替代
 	},
 	SupportedImagineModels: []string{
 		"gemini-2.0-flash-exp-image-generation",
